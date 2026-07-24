@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <style>
+    .pane { fill: #edefee }
+    .caret { fill: #2c7a67 }
+    @media (prefers-color-scheme: dark) {
+      .pane { fill: #111415 }
+      .caret { fill: #63c2a8 }
+    }
+  </style>
+  <rect class="pane" width="32" height="32" rx="7"/>
+  <rect class="caret" x="14" y="7" width="4" height="18" rx="2"/>
+</svg>

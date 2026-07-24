@@ -1,0 +1,500 @@
+/* ------------------------------------------------------------------
+   Self-hosted type. No external requests, ever.
+
+   Drop Newsreader's variable woff2 into public/fonts/ and this picks
+   it up. Until then the fallback stack below carries the design —
+   Iowan Old Style, Palatino and Charter are all close cousins.
+   ------------------------------------------------------------------ */
+@font-face {
+  font-family: 'Newsreader';
+  src: url('/fonts/newsreader-variable.woff2') format('woff2-variations');
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+  /* Latin + Latin-1 + punctuation. Anything outside this falls back. */
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6,
+    U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Newsreader';
+  src: url('/fonts/newsreader-italic-variable.woff2') format('woff2-variations');
+  font-weight: 200 800;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* ------------------------------------------------------------------
+   Palette — one pane of glass, lit two ways.
+   ------------------------------------------------------------------ */
+:root {
+  color-scheme: light;
+  --bg: #edefee;
+  --ink: #181b1c;
+  --mute: #7e8583;
+  --hairline: #d3d8d6;
+  --chip: rgb(237 239 238 / 72%);
+  --signal: #2c7a67;
+  --shadow: rgb(24 27 28 / 8%);
+
+  --measure: 36rem;
+  --step: 1.1875rem; /* 19px */
+  --leading: 1.65;
+  --ease: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --bg: #111415;
+    --ink: #d9dedd;
+    --mute: #6d7573;
+    --hairline: #262d2e;
+    --chip: rgb(17 20 21 / 72%);
+    --signal: #63c2a8;
+    --shadow: rgb(0 0 0 / 30%);
+  }
+}
+
+/* Explicit override wins over the OS preference. Session only —
+   nothing is written to disk, so this resets on reload. */
+:root[data-theme='day'] {
+  color-scheme: light;
+  --bg: #edefee;
+  --ink: #181b1c;
+  --mute: #7e8583;
+  --hairline: #d3d8d6;
+  --chip: rgb(237 239 238 / 72%);
+  --signal: #2c7a67;
+  --shadow: rgb(24 27 28 / 8%);
+}
+
+:root[data-theme='night'] {
+  color-scheme: dark;
+  --bg: #111415;
+  --ink: #d9dedd;
+  --mute: #6d7573;
+  --hairline: #262d2e;
+  --chip: rgb(17 20 21 / 72%);
+  --signal: #63c2a8;
+  --shadow: rgb(0 0 0 / 30%);
+}
+
+/* ------------------------------------------------------------------
+   Reset
+   ------------------------------------------------------------------ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Newsreader', 'Iowan Old Style', 'Palatino Linotype', Palatino,
+    Charter, Georgia, ui-serif, serif;
+  font-optical-sizing: auto;
+  font-size: var(--step);
+  line-height: var(--leading);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background-color 420ms var(--ease), color 420ms var(--ease);
+}
+
+::selection {
+  background: color-mix(in srgb, var(--signal) 24%, transparent);
+}
+
+/* ------------------------------------------------------------------
+   ProseMirror base styles.
+
+   Tiptap normally injects these at runtime via a <style> element,
+   which a strict CSP (style-src 'self') correctly refuses to run.
+   So we carry them here and pass injectCSS: false to the editor.
+   Same rules, served from our own origin, no policy relaxation.
+   ------------------------------------------------------------------ */
+.ProseMirror {
+  position: relative;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  white-space: break-spaces;
+  -webkit-font-variant-ligatures: none;
+  font-variant-ligatures: none;
+  font-feature-settings: 'liga' 0;
+}
+
+.ProseMirror [contenteditable='false'] {
+  white-space: normal;
+}
+
+.ProseMirror [contenteditable='false'] [contenteditable='true'] {
+  white-space: pre-wrap;
+}
+
+.ProseMirror pre {
+  white-space: pre-wrap;
+}
+
+img.ProseMirror-separator {
+  display: inline !important;
+  border: none !important;
+  margin: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.ProseMirror-gapcursor {
+  display: none;
+  pointer-events: none;
+  position: absolute;
+  margin: 0;
+}
+
+.ProseMirror-gapcursor::after {
+  content: '';
+  display: block;
+  position: absolute;
+  top: -2px;
+  width: 20px;
+  border-top: 1px solid var(--ink);
+  animation: pm-cursor-blink 1.1s steps(2, start) infinite;
+}
+
+@keyframes pm-cursor-blink {
+  to {
+    visibility: hidden;
+  }
+}
+
+.ProseMirror-hideselection *::selection {
+  background: transparent;
+}
+
+.ProseMirror-hideselection * {
+  caret-color: transparent;
+}
+
+.ProseMirror-focused .ProseMirror-gapcursor {
+  display: block;
+}
+
+/* ------------------------------------------------------------------
+   The sheet
+   ------------------------------------------------------------------ */
+.sheet {
+  max-width: var(--measure);
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 18vh 1.5rem 45vh; /* deep bottom pad keeps the live line high */
+  cursor: text;
+}
+
+.editor {
+  outline: none;
+  caret-color: var(--signal);
+}
+
+/* autofocus registers as :focus-visible in Chromium, which draws its
+   default ring around the whole sheet on load. The caret is the focus
+   indicator here — a writing surface doesn't get an outline. */
+.editor .ProseMirror:focus,
+.editor .ProseMirror:focus-visible {
+  outline: none;
+}
+
+.editor > *:first-child {
+  margin-top: 0;
+}
+
+.editor p {
+  margin: 0 0 1.15em;
+}
+
+.editor h1,
+.editor h2,
+.editor h3 {
+  line-height: 1.25;
+  font-weight: 600;
+  margin: 1.9em 0 0.55em;
+  letter-spacing: -0.011em;
+}
+
+.editor h1 {
+  font-size: 1.85em;
+}
+.editor h2 {
+  font-size: 1.4em;
+}
+.editor h3 {
+  font-size: 1.15em;
+}
+
+.editor ul,
+.editor ol {
+  margin: 0 0 1.15em;
+  padding-left: 1.35em;
+}
+
+.editor li {
+  margin-bottom: 0.3em;
+}
+
+.editor li > p {
+  margin-bottom: 0.3em;
+}
+
+.editor blockquote {
+  margin: 0 0 1.15em;
+  padding-left: 1.1em;
+  border-left: 2px solid var(--hairline);
+  color: color-mix(in srgb, var(--ink) 78%, var(--bg));
+  font-style: italic;
+}
+
+.editor hr {
+  border: 0;
+  border-top: 1px solid var(--hairline);
+  margin: 2.2em 0;
+}
+
+.editor code {
+  font-family: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.86em;
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
+  padding: 0.12em 0.32em;
+  border-radius: 3px;
+}
+
+.editor pre {
+  font-family: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.84em;
+  line-height: 1.55;
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  padding: 0.85em 1em;
+  margin: 0 0 1.15em;
+  overflow-x: auto;
+}
+
+.editor pre code {
+  background: none;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* Placeholder — first line only */
+.editor p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--mute);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------------
+   The promise. Visible only on a blank sheet.
+   ------------------------------------------------------------------ */
+.promise {
+  position: fixed;
+  top: calc(18vh + 2.75rem); /* clears the first line of the sheet */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: var(--measure);
+  margin: 0;
+  padding: 0 1.5rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  letter-spacing: 0.005em;
+  color: var(--mute);
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 300ms var(--ease);
+}
+
+body:not(.is-blank) .promise {
+  opacity: 0;
+}
+
+/* ------------------------------------------------------------------
+   The source link — the promise's receipt. Blank sheet only.
+   ------------------------------------------------------------------ */
+.source {
+  position: fixed;
+  left: max(1.25rem, env(safe-area-inset-left));
+  bottom: max(1.5rem, env(safe-area-inset-bottom));
+  font-size: 0.8125rem;
+  letter-spacing: 0.005em;
+  color: var(--mute);
+  text-decoration: none;
+  transition: opacity 300ms var(--ease), color 180ms var(--ease);
+}
+
+.source:hover,
+.source:focus-visible {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.source:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+body:not(.is-blank) .source {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------------
+   Controls — fixed, always reachable, quiet at rest
+   ------------------------------------------------------------------ */
+.controls {
+  position: fixed;
+  right: max(1.25rem, env(safe-area-inset-right));
+  bottom: max(1.25rem, env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0.1875rem;
+  border-radius: 999px;
+  background: var(--chip);
+  border: 1px solid var(--hairline);
+  box-shadow: 0 1px 2px var(--shadow), 0 6px 20px var(--shadow);
+  transition: background-color 420ms var(--ease), border-color 420ms var(--ease);
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .controls {
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    backdrop-filter: blur(14px) saturate(140%);
+  }
+}
+
+.control {
+  appearance: none;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--mute);
+  cursor: pointer;
+  transition: color 180ms var(--ease), background-color 180ms var(--ease);
+}
+
+.control:hover,
+.control:focus-visible {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
+}
+
+.control:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 1px;
+}
+
+.control:active {
+  transform: scale(0.94);
+}
+
+.control svg {
+  width: 1.0625rem;
+  height: 1.0625rem;
+  display: block;
+}
+
+/* Icon crossfade: both glyphs stacked, state decides which is lit.
+   Driven by data-state rather than [hidden] — `hidden` is an
+   HTMLElement property and does not reflect onto SVG elements. */
+.control .glyph {
+  grid-area: 1 / 1;
+  transform-origin: center;
+  transition: opacity 220ms var(--ease), transform 220ms var(--ease);
+}
+
+.control[data-state='day'] [data-glyph='sun'],
+.control[data-state='night'] [data-glyph='moon'],
+.control[data-state='idle'] [data-glyph='check'],
+.control[data-state='done'] [data-glyph='copy'] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.control[data-state='day'] [data-glyph='sun'] {
+  transform: scale(0.6) rotate(-45deg);
+}
+
+.control[data-state='night'] [data-glyph='moon'] {
+  transform: scale(0.6) rotate(45deg);
+}
+
+.control[data-state='idle'] [data-glyph='check'],
+.control[data-state='done'] [data-glyph='copy'] {
+  transform: scale(0.7);
+}
+
+/* Copy confirmation — the one moment of colour in the whole app */
+.control.is-done {
+  color: var(--signal);
+}
+
+.controls.is-done {
+  border-color: color-mix(in srgb, var(--signal) 45%, var(--hairline));
+}
+
+/* Screen-reader-only live region */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ------------------------------------------------------------------
+   Smaller screens
+   ------------------------------------------------------------------ */
+@media (max-width: 34rem) {
+  :root {
+    --step: 1.125rem;
+  }
+  .sheet {
+    padding: 12vh 1.25rem 50vh;
+  }
+  .promise {
+    padding: 0 1.25rem;
+    top: calc(12vh + 2.6rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+  }
+  .control:active {
+    transform: none;
+  }
+}
