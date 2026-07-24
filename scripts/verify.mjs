@@ -78,10 +78,12 @@ const urlRefs = (file, src) => {
   if (file.endsWith('.html') || file.endsWith('.svg')) {
     // Resource loads only: src= anywhere, href= on <link>. An <a href>
     // is user-initiated navigation — nothing is fetched unless clicked —
-    // and the source link to the public repo is deliberate.
+    // and the source link to the public repo is deliberate. rel=canonical
+    // is inert metadata the browser never fetches, so it's exempt too.
     for (const m of src.matchAll(/\bsrc\s*=\s*["'](https?:\/\/[^"']+)["']/gi)) refs.push(m[1])
-    for (const m of src.matchAll(/<link\b[^>]*\bhref\s*=\s*["'](https?:\/\/[^"']+)["']/gi))
-      refs.push(m[1])
+    for (const m of src.matchAll(/<link\b[^>]*\bhref\s*=\s*["'](https?:\/\/[^"']+)["'][^>]*>/gi)) {
+      if (!/rel\s*=\s*["']canonical["']/i.test(m[0])) refs.push(m[1])
+    }
   }
   if (file.endsWith('.css') || file.endsWith('.html')) {
     for (const m of src.matchAll(/url\(\s*["']?(https?:\/\/[^"')]+)/gi)) refs.push(m[1])

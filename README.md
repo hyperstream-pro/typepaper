@@ -212,9 +212,13 @@ Markdown has no underline syntax. Everything else round-trips.
 ## The name
 
 **Typepaper** — a typewriter's paper is the only memory the machine has, and
-when you pull the sheet out, nothing stays behind. Domain TBD
-(`typepaper.ink`, `.app`, `.page`, and `.space` were all unregistered as of
-July 2026).
+when you pull the sheet out, nothing stays behind.
+
+It lives at **typepaper.app**. The TLD is part of the design: all of `.app`
+is HSTS-preloaded, so every browser refuses to load it over anything but
+HTTPS — enforced at the TLD level, before this app's own headers are even
+consulted. The same shape as everything else here: a guarantee the platform
+enforces rather than a promise we make.
 
 ---
 

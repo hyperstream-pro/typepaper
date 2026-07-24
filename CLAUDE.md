@@ -124,9 +124,11 @@ Cloudflare.
 
 - Two font files into `public/fonts/` (see the README there). Fallback stack
   carries the design until then; nothing is broken.
-- Naming: **decided — "Typepaper"** (applied to title, package.json, README,
-  July 2026). TLD still open: typepaper.ink / .app / .page / .space were all
-  unregistered at decision time; typepaper.com is a HugeDomains squat.
+- Naming: **decided — "Typepaper" at typepaper.app** (July 2026; applied to
+  title, package.json, README, canonical link). .app chosen deliberately:
+  the TLD is HSTS-preloaded, extending the platform-enforced-guarantee
+  pattern to the domain itself. Registration pending — register before
+  announcing anything. typepaper.com is a HugeDomains squat; ignore it.
 - Optional: importing Tiptap extensions individually instead of StarterKit
   drops linkifyjs, at the cost of a longer dependency list. Deliberately not
   done — maintainability won.
