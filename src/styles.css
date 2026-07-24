@@ -458,6 +458,29 @@ body:not(.is-blank) .source {
   border-color: color-mix(in srgb, var(--signal) 45%, var(--hairline));
 }
 
+/* Visible copy feedback — failure only, monochrome, above the controls.
+   Success is signalled by the accent glyph; only failure needs words. */
+.feedback {
+  position: fixed;
+  right: max(1.25rem, env(safe-area-inset-right));
+  bottom: calc(max(1.25rem, env(safe-area-inset-bottom)) + 3.25rem);
+  margin: 0;
+  max-width: min(18rem, 68vw);
+  text-align: right;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--mute);
+  opacity: 0;
+  transform: translateY(4px);
+  pointer-events: none;
+  transition: opacity 200ms var(--ease), transform 200ms var(--ease);
+}
+
+.feedback.is-shown {
+  opacity: 1;
+  transform: none;
+}
+
 /* Screen-reader-only live region */
 .sr-only {
   position: absolute;

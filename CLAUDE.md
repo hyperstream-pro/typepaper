@@ -24,9 +24,13 @@ you can't see an absence — so they need stating.
 5. **No `unsafe-inline` or `unsafe-eval` in the CSP.** If a CSP error appears,
    fix what caused it. There is a worked example of doing exactly that below.
 
-`npm run verify` enforces 1–5 against the built bundle and fails the build.
-Run it before reporting any task complete. Don't weaken the check to make it
-pass — if it fires, it's usually right.
+`npm run verify` enforces 1–5 against the built bundle, and `npm run build`
+runs it as its final step — so a violation fails the build (and therefore
+the Cloudflare/Vercel deploy, whose build command is `npm run build`). It
+checks every CSP directive in all three places the policy lives, that no
+directive names an external host, and that `_headers` and `vercel.json` stay
+byte-identical. Don't weaken the check to make it pass — if it fires, it's
+usually right.
 
 ## Pitfalls already hit
 
@@ -42,6 +46,20 @@ Costly to rediscover, so:
 - **`hidden` doesn't reflect onto SVG elements.** It's an `HTMLElement`
   property. Icon visibility is driven by `data-state` on the button plus CSS.
   Setting `.hidden` on an `<svg>` silently does nothing.
+- **`isBlank()` is defined by the serializer, not a node count.** It returns
+  `toPlainText(doc) === ''` (after a cheap textContent early-out). A
+  `content.size` heuristic looks tempting and is wrong in both directions:
+  four empty paragraphs exceed a small size threshold yet are blank, and a
+  lone `---` is under it yet is real content. The same definition backs the
+  copy button, the blank-sheet overlay, and the beforeunload guard, so they
+  never disagree. Don't reintroduce a size shortcut.
+- **The code-block serializer bumps its fence** to one more backtick than the
+  longest run inside the body (CommonMark), or a code block *about* Markdown
+  closes its own fence early. Don't simplify it back to a fixed ```` ``` ````.
+- **Copy failure shows monochrome words, success shows the accent glyph.**
+  Sighted users get no glyph change on failure, so `.feedback` surfaces the
+  message in `--mute`; the lone accent colour stays reserved for the success
+  confirmation. The sr-only `#status` is the screen-reader channel. Keep both.
 - **StarterKit v3 differs from v2.** `history` is now `undoRedo`; `Link` and
   `Underline` ship by default. `Placeholder` moved to `@tiptap/extensions`.
 - **`link: false` removes Link from the schema but not linkifyjs from the

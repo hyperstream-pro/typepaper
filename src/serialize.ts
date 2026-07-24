@@ -60,7 +60,12 @@ function serializeBlock(node: PMNode, depth: number): string[] {
       // Trailing newlines are an artefact of hitting Enter before
       // leaving the block; they'd push the closing fence adrift.
       const body = node.textContent.replace(/\s+$/, '')
-      return [`${pad}\`\`\`${lang}\n${body}\n${pad}\`\`\``]
+      // The fence must be longer than the longest backtick run inside the
+      // body, or an embedded ``` closes the block early (CommonMark). A
+      // code block about Markdown is the obvious way to hit this.
+      const longestRun = Math.max(0, ...[...body.matchAll(/`+/g)].map((m) => m[0].length))
+      const fence = '`'.repeat(Math.max(3, longestRun + 1))
+      return [`${pad}${fence}${lang}\n${body}\n${pad}${fence}`]
     }
 
     case 'horizontalRule':
@@ -77,19 +82,31 @@ function serializeBlock(node: PMNode, depth: number): string[] {
 function serializeListItem(item: PMNode, depth: number, marker: string): string[] {
   const pad = '  '.repeat(depth)
   const parts: string[] = []
+  // Does the item lead with its own paragraph text, or is its first
+  // content a nested block (an empty bullet holding only a sublist)?
+  // The marker must sit on the item's own line — gluing it onto an
+  // already-indented nested line produces "-   - child" garbage.
+  let leadsWithOwnText = false
 
   item.forEach((child) => {
     if (child.type.name === 'paragraph') {
       const text = inline(child)
-      if (text.trim()) parts.push(text)
+      if (text.trim()) {
+        if (parts.length === 0) leadsWithOwnText = true
+        parts.push(text)
+      }
     } else {
       parts.push(...serializeBlock(child, depth + 1))
     }
   })
 
   if (!parts.length) return []
-  const [first, ...rest] = parts
-  return [`${pad}${marker}${first}`, ...rest]
+  if (leadsWithOwnText) {
+    const [first, ...rest] = parts
+    return [`${pad}${marker}${first}`, ...rest]
+  }
+  // Empty item carrying only nested content: bare marker on its own line.
+  return [`${pad}${marker}`.trimEnd(), ...parts]
 }
 
 function inline(node: PMNode): string {

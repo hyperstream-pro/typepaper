@@ -34,6 +34,19 @@ const textFiles = files.filter((p) =>
   ['.js', '.css', '.html', '.svg', '.json', '.webmanifest', ''].includes(extname(p)),
 )
 
+// Guard against a vacuous pass: the invariant-1/2 scans look for forbidden
+// APIs *in the bundle*, so a broken build that emitted no JS (or no HTML)
+// would satisfy them trivially and report success. Require the real
+// artifacts to exist before trusting an all-clear.
+if (!files.some((p) => extname(p) === '.js')) {
+  console.error('verify: dist/ has no JavaScript bundle — build is incomplete, refusing to pass.')
+  process.exit(1)
+}
+if (!existsSync(join(dist, 'index.html'))) {
+  console.error('verify: dist/index.html missing — build is incomplete, refusing to pass.')
+  process.exit(1)
+}
+
 /* 1 + 2 — the bundle must not contain storage or network APIs. */
 const FORBIDDEN = [
   ['localStorage', 'persistence (invariant 1)'],
@@ -108,38 +121,98 @@ for (const dir of ['api', 'functions', 'netlify/functions', 'edge-functions', jo
 for (const f of ['middleware.ts', 'middleware.js', '_worker.js', join('dist', '_worker.js')]) {
   if (existsSync(join(root, f))) fail(`${f} exists — server-side code (invariant 4)`)
 }
-const vercelJson = JSON.parse(readFileSync(join(root, 'vercel.json'), 'utf8'))
+let vercelJson
+try {
+  vercelJson = JSON.parse(readFileSync(join(root, 'vercel.json'), 'utf8'))
+} catch (err) {
+  console.error(`verify: vercel.json is unreadable or malformed — ${err.message}`)
+  process.exit(1)
+}
 if (vercelJson.functions || vercelJson.crons)
   fail('vercel.json declares functions/crons — server-side code (invariant 4)')
 
-/* 5 — the CSP, in all three places it lives. */
-const REQUIRED_DIRECTIVES = ["default-src 'none'", "connect-src 'none'", "script-src 'self'"]
-const checkCsp = (where, csp) => {
+/* 5 — the CSP, in all three places it lives. Every directive is checked,
+   not just a representative few: widening any one of them (an img-src or
+   style-src pointed at a CDN, say — the exact Google-Fonts scenario the
+   docs forbid) is the likely way this invariant slips, and it must fail. */
+const REQUIRED_DIRECTIVES = [
+  "default-src 'none'",
+  "script-src 'self'",
+  "style-src 'self'",
+  "font-src 'self'",
+  "img-src 'self'",
+  "connect-src 'none'",
+  "base-uri 'none'",
+  "form-action 'none'",
+]
+const checkCsp = (where, csp, { frameAncestors = false } = {}) => {
   if (!csp) return fail(`${where}: no Content-Security-Policy found (invariant 5)`)
   if (/unsafe-inline|unsafe-eval/.test(csp)) fail(`${where}: CSP contains an unsafe-* escape hatch (invariant 5)`)
+  // No directive may name an external host: 'self'/'none' and scheme
+  // keywords only. A CDN or font host here is a third-party origin.
+  if (/(?:https?:)?\/\/[a-z0-9.-]+/i.test(csp))
+    fail(`${where}: CSP references an external host (invariant 3/5)`)
   for (const d of REQUIRED_DIRECTIVES) {
     if (!csp.includes(d)) fail(`${where}: CSP missing "${d}" (invariant 5)`)
   }
+  // frame-ancestors is a header-only directive (<meta> can't carry it),
+  // so it's required in the real response headers but not the meta tag.
+  if (frameAncestors && !csp.includes("frame-ancestors 'none'"))
+    fail(`${where}: CSP missing "frame-ancestors 'none'" (invariant 5)`)
 }
 
 const html = readFileSync(join(dist, 'index.html'), 'utf8')
 const decodeEntities = (s) =>
   s?.replaceAll('&#39;', "'").replaceAll('&quot;', '"').replaceAll('&amp;', '&')
-checkCsp(
-  'dist/index.html <meta>',
-  decodeEntities(html.match(/http-equiv="Content-Security-Policy"\s+content="([^"]+)"/)?.[1]),
+const metaCsp = decodeEntities(
+  html.match(/http-equiv="Content-Security-Policy"\s+content="([^"]+)"/)?.[1],
 )
+checkCsp('dist/index.html <meta>', metaCsp)
 
 const headersPath = join(dist, '_headers')
+const headersCsp = existsSync(headersPath)
+  ? readFileSync(headersPath, 'utf8').match(/Content-Security-Policy:\s*(.+)/)?.[1]
+  : null
 if (!existsSync(headersPath)) {
   fail('dist/_headers missing — Cloudflare would serve without security headers')
 } else {
-  checkCsp('dist/_headers', readFileSync(headersPath, 'utf8').match(/Content-Security-Policy:\s*(.+)/)?.[1])
+  checkCsp('dist/_headers', headersCsp, { frameAncestors: true })
 }
-checkCsp(
-  'vercel.json',
-  vercelJson.headers?.flatMap((h) => h.headers).find((h) => h.key === 'Content-Security-Policy')?.value,
-)
+const vercelCsp = vercelJson.headers
+  ?.flatMap((h) => h.headers)
+  .find((h) => h.key === 'Content-Security-Policy')?.value
+checkCsp('vercel.json', vercelCsp, { frameAncestors: true })
+
+/* 5b — the two host configs claim to be "kept in sync". Enforce it, so a
+   change to one file that isn't mirrored in the other can't ship. The
+   <meta> is the header CSP minus the header-only frame-ancestors. */
+if (headersCsp && vercelCsp && headersCsp.trim() !== vercelCsp.trim())
+  fail('CSP differs between dist/_headers and vercel.json — the two hosts would serve different policies')
+if (metaCsp && vercelCsp && metaCsp.trim() !== vercelCsp.replace(/;\s*frame-ancestors 'none'/, '').trim())
+  fail('CSP <meta> and vercel.json disagree beyond the expected frame-ancestors difference')
+
+/* 5c — the other security headers must match between the two host files.
+   Only _headers was ever cross-checked before; drift in either was silent. */
+const parseCloudflareGlobal = (text) => {
+  const map = {}
+  let inGlobal = false
+  for (const line of text.split('\n')) {
+    if (/^\/\*\s*$/.test(line)) { inGlobal = true; continue }
+    if (/^\S/.test(line)) inGlobal = false
+    const m = inGlobal && line.match(/^\s+([A-Za-z-]+):\s*(.+?)\s*$/)
+    if (m) map[m[1].toLowerCase()] = m[2]
+  }
+  return map
+}
+if (headersCsp) {
+  const cf = parseCloudflareGlobal(readFileSync(headersPath, 'utf8'))
+  const vercelGlobal = (vercelJson.headers?.find((h) => h.source === '/(.*)')?.headers ?? [])
+    .reduce((m, h) => ((m[h.key.toLowerCase()] = h.value), m), {})
+  for (const key of Object.keys(vercelGlobal)) {
+    if (cf[key] === undefined) fail(`_headers missing "${key}" that vercel.json sets (sync)`)
+    else if (cf[key] !== vercelGlobal[key]) fail(`header "${key}" differs between _headers and vercel.json (sync)`)
+  }
+}
 
 /* 6 — opt-outs that fence off exfiltration paths CSP can't reach
    (extensions, Chrome translate). These are presences, not absences,
@@ -154,6 +227,19 @@ if (existsSync(headersPath) && !readFileSync(headersPath, 'utf8').includes('Perm
   fail('dist/_headers: Permissions-Policy header missing')
 if (!html.includes('href="https://github.com/hyperstream-pro/typepaper"'))
   fail('dist/index.html: source link to the public repo missing')
+
+/* 7 — structural hooks main.ts asserts on with `!`. If markup drops one,
+   the module throws at load and everything after it silently never wires
+   up (order-dependent partial init). Cheap to catch here instead. */
+for (const hook of [
+  'data-action="theme"',
+  'data-action="copy"',
+  'class="editor"',
+  'id="status"',
+  'class="feedback"',
+]) {
+  if (!html.includes(hook)) fail(`dist/index.html: structural hook ${hook} missing (main.ts asserts on it)`)
+}
 
 if (failures.length) {
   console.error(`verify: ${failures.length} violation(s):\n`)
