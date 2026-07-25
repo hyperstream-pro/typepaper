@@ -214,8 +214,10 @@ img.ProseMirror-separator {
   margin-top: 0;
 }
 
+/* Enter behaves like a plain text editor: new line, no extra gap.
+   The 1.65 leading is the only vertical rhythm between paragraphs. */
 .editor p {
-  margin: 0 0 0.65em;
+  margin: 0;
 }
 
 .editor h1,
@@ -244,11 +246,7 @@ img.ProseMirror-separator {
 }
 
 .editor li {
-  margin-bottom: 0.3em;
-}
-
-.editor li > p {
-  margin-bottom: 0.3em;
+  margin-bottom: 0;
 }
 
 .editor blockquote {
