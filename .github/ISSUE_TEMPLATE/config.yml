@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/hyperstream-pro/typepaper/security/policy
+    about: A way text could persist or leave the page? Report it privately — not as a public issue.
