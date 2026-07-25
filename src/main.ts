@@ -26,7 +26,7 @@ const editor = new Editor({
       trailingNode: false,
       heading: { levels: [1, 2, 3] },
     }),
-    Placeholder.configure({ placeholder: "Write. Close the tab when you're done. Nothing is kept." }),
+    Placeholder.configure({ placeholder: "Write. Copy. Paste. Close the tab when you're done. Nothing is kept." }),
   ],
   editorProps: {
     attributes: {
