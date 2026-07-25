@@ -273,8 +273,8 @@ scripts/verify.test.mjs  mutation tests: proves verify catches each violation
 vite.config.ts           static build + CSP meta injection + brand switch
 vercel.json              Vercel headers and cache policy
 public/_headers          the same, for Cloudflare Pages
-public/brand/            two marks: lines/ (default) and t/ — favicon,
-                         social card, touch icon each. Build with VITE_BRAND=t
+public/brand/            two marks: t/ (default) and lines/ — favicon,
+                         social card, touch icon each. Build with VITE_BRAND=lines
                          to switch every reference; both ship either way.
 ```
 
