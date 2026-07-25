@@ -180,6 +180,27 @@ all three places it lives — and fails the build if any of them slips.
 
 ---
 
+## Known limits
+
+A web page cannot promise what the rest of your machine does. For
+completeness, the edges that sit outside this page's control:
+
+- **The clipboard leaves the sandbox by design.** Copy hands your text to
+  the operating system, and Apple's Universal Clipboard or Windows Cloud
+  Clipboard may sync it off-device. That's the one action you asked for.
+- **Browser extensions** with page access can read anything you can see.
+  The CSP does not bind them; the editor carries the documented opt-outs
+  for the common grammar checkers, which is the strongest available fence.
+- **Mobile keyboards and IMEs** may learn from (and sometimes upload)
+  what's typed. The OS picks the keyboard, not the page.
+- **RAM, swap, hibernation files, crash restore, accessibility APIs** are
+  the operating system's business, not the page's.
+
+An edge found inside what the page controls is a bug — please report it.
+One found outside is a contribution — it belongs on this list.
+
+---
+
 ## Decisions you might want to reverse
 
 Each of these is deliberate and each is a small edit. I would rather flag
