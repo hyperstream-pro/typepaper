@@ -228,9 +228,12 @@ img.ProseMirror-separator {
   font-size: 1.15em;
 }
 
+/* Blocks with visual chrome get breathing room on BOTH sides — with
+   paragraph margins at zero, all of it has to come from the block
+   itself. Sibling margins collapse, so block-after-block stays 0.65em. */
 .editor ul,
 .editor ol {
-  margin: 0 0 0.65em;
+  margin: 0.65em 0;
   padding-left: 1.35em;
 }
 
@@ -239,7 +242,7 @@ img.ProseMirror-separator {
 }
 
 .editor blockquote {
-  margin: 0 0 0.65em;
+  margin: 0.65em 0;
   padding-left: 1.1em;
   border-left: 2px solid var(--hairline);
   color: color-mix(in srgb, var(--ink) 78%, var(--bg));
@@ -268,7 +271,7 @@ img.ProseMirror-separator {
   border: 1px solid var(--hairline);
   border-radius: 6px;
   padding: 0.85em 1em;
-  margin: 0 0 0.65em;
+  margin: 0.65em 0;
   overflow-x: auto;
 }
 
@@ -308,8 +311,13 @@ img.ProseMirror-separator {
   transition: opacity 300ms var(--ease);
 }
 
+/* visibility flips after the fade completes (the delayed transition
+   lives on THIS state, so fading back in is instant-visible). Removes
+   the faded text from the accessibility tree, not just from view. */
 body:not(.is-blank) .promise {
   opacity: 0;
+  visibility: hidden;
+  transition: opacity 300ms var(--ease), visibility 0s 300ms;
 }
 
 /* ------------------------------------------------------------------
@@ -339,9 +347,14 @@ body:not(.is-blank) .promise {
   border-radius: 2px;
 }
 
+/* Same visibility trick as .promise — an invisible link must not stay
+   keyboard-focusable, and visibility (unlike opacity) drops it from the
+   tab order and the accessibility tree. */
 body:not(.is-blank) .source {
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
+  transition: opacity 300ms var(--ease), visibility 0s 300ms;
 }
 
 /* ------------------------------------------------------------------

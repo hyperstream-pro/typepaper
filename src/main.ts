@@ -68,7 +68,15 @@ const isBlank = (): boolean => {
 }
 
 const syncBlankState = (): void => {
-  document.body.classList.toggle('is-blank', isBlank())
+  // The overlay (promise line + source link) assumes the caret sits on
+  // line one. Extra empty paragraphs are still "blank", but the caret
+  // would sit on top of the overlay text — so the class also requires a
+  // single-block doc. Copy and beforeunload call isBlank() directly and
+  // are unaffected.
+  document.body.classList.toggle(
+    'is-blank',
+    isBlank() && editor.state.doc.childCount === 1,
+  )
 }
 
 editor.on('update', syncBlankState)
@@ -224,12 +232,21 @@ copyButton.addEventListener('click', () => void handleCopy())
    ------------------------------------------------------------------ */
 
 // Ctrl/Cmd + Enter copies everything without leaving the keyboard.
-window.addEventListener('keydown', (event) => {
-  if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
-    event.preventDefault()
-    void handleCopy()
-  }
-})
+// Capture phase, and the event must be stopped: Tiptap binds Mod-Enter
+// too (hard break, exit-code-block), and ProseMirror preventDefaults
+// without stopping propagation — so a bubble-phase listener here would
+// copy AND let the editor inject a line break on every use.
+window.addEventListener(
+  'keydown',
+  (event) => {
+    if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+      event.preventDefault()
+      event.stopPropagation()
+      void handleCopy()
+    }
+  },
+  { capture: true },
+)
 
 // A stray Cmd+W shouldn't cost you an hour. This is a native browser
 // prompt — nothing is stored to make it work. Delete this block if you
