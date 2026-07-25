@@ -252,3 +252,7 @@ it from the schema but not from the bundle, because StarterKit imports
 `linkifyjs` statically. Importing the ~14 extensions individually instead
 drops that weight, at the cost of a longer dependency list to maintain. I
 chose the maintainable side; the trade is yours to make.
+
+## License
+
+MIT © 2026 ghostsinthemachine ltd. Read it, fork it, verify it.
