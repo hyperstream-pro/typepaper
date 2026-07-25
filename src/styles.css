@@ -39,7 +39,7 @@
      calm the design is after. */
   --mute-text: #656b69;
   --hairline: #d3d8d6;
-  --chip: rgb(237 239 238 / 72%);
+  --chip: rgb(237 239 238 / 97%);
   --signal: #2c7a67;
   --shadow: rgb(24 27 28 / 8%);
 
@@ -60,7 +60,7 @@
   --mute: #7e8583;
   --mute-text: #656b69;
   --hairline: #d3d8d6;
-  --chip: rgb(237 239 238 / 72%);
+  --chip: rgb(237 239 238 / 97%);
   --signal: #2c7a67;
   --shadow: rgb(24 27 28 / 8%);
 }
@@ -72,7 +72,7 @@
   --mute: #6d7573;
   --mute-text: #7c8582;
   --hairline: #262d2e;
-  --chip: rgb(17 20 21 / 72%);
+  --chip: rgb(17 20 21 / 97%);
   --signal: #63c2a8;
   --shadow: rgb(0 0 0 / 30%);
 }
@@ -379,6 +379,7 @@ body:not(.is-blank) .source {
    ------------------------------------------------------------------ */
 .controls {
   position: fixed;
+  z-index: 100;
   right: max(1.25rem, env(safe-area-inset-right));
   top: max(1.25rem, env(safe-area-inset-top));
   display: flex;
@@ -479,6 +480,7 @@ body:not(.is-blank) .source {
    Success is signalled by the accent glyph; only failure needs words. */
 .feedback {
   position: fixed;
+  z-index: 100;
   right: max(1.25rem, env(safe-area-inset-right));
   top: calc(max(1.25rem, env(safe-area-inset-top)) + 3.25rem);
   margin: 0;
