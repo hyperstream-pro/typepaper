@@ -38,6 +38,12 @@ const editor = new Editor({
       spellcheck: 'false',
       autocapitalize: 'sentences',
       autocorrect: 'off',
+      // Browsers' session restore writes form state to the profile on
+      // disk; autocomplete=off opts form fields out in Firefox. Whether
+      // that extends to contenteditable is UNTESTED — costs nothing to
+      // declare, but the real answer is the manual crash-restore test
+      // in CLAUDE.md's open work. See README "Known limits".
+      autocomplete: 'off',
       'aria-label': 'Writing area',
       // Extensions run outside the CSP, so grammar checkers that upload
       // text (Grammarly, LanguageTool) can't be blocked — but they

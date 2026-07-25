@@ -149,6 +149,14 @@ Cloudflare.
 
 ## Open work
 
+- **Manual crash-restore test before launch** (cannot be automated from this
+  harness): in Firefox and Chrome, type text, force-kill the browser
+  process, reopen, restore the session — does the text come back? Firefox's
+  session store captures form state to disk; whether it captures this
+  contenteditable is unknown. `autocomplete="off"` is set on the editor as
+  a best-effort opt-out but is UNVERIFIED for contenteditable. Whatever the
+  result, document it in README's Known limits table (and if text survives,
+  that's a finding to frame ourselves, not to be found).
 - Two font files into `public/fonts/` (see the README there). Fallback stack
   carries the design until then; nothing is broken.
 - Naming: **decided — "Typepaper" at typepaper.app** (July 2026; applied to

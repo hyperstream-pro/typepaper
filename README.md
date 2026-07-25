@@ -164,8 +164,9 @@ and every dependency's — not minified output. Maps are same-origin static
 files fetched only while DevTools is open; normal visits never load them.
 
 **The build is reproducible.** The lockfile is committed and the output is
-deterministic — two builds produce byte-identical files. So you can prove the
-served code is the audited code:
+deterministic — two builds produce byte-identical files (verified on
+Node 20; the `engines` field pins the floor). Source maps let you *read*
+the code; this lets you *prove* the served bundle came from it:
 
 ```bash
 npm ci && npm run build
@@ -182,22 +183,17 @@ all three places it lives — and fails the build if any of them slips.
 
 ## Known limits
 
-A web page cannot promise what the rest of your machine does. For
-completeness, the edges that sit outside this page's control:
+A web page cannot promise what the rest of your machine does. The threat
+model, by who controls each layer:
 
-- **The clipboard leaves the sandbox by design.** Copy hands your text to
-  the operating system, and Apple's Universal Clipboard or Windows Cloud
-  Clipboard may sync it off-device. That's the one action you asked for.
-- **Browser extensions** with page access can read anything you can see.
-  The CSP does not bind them; the editor carries the documented opt-outs
-  for the common grammar checkers, which is the strongest available fence.
-- **Mobile keyboards and IMEs** may learn from (and sometimes upload)
-  what's typed. The OS picks the keyboard, not the page.
-- **RAM, swap, hibernation files, crash restore, accessibility APIs** are
-  the operating system's business, not the page's.
+| Layer | Controlled by | The edges |
+|---|---|---|
+| **The page** | This code + the CSP | None, by design — every claim above is scoped to this layer and enforced by the build. A leak here is a bug: report it. |
+| **The browser** | Your browser vendor | Extensions with page access can read anything you can see (the editor ships the grammar-checker opt-outs — the strongest available fence). Crash/session restore may write page state to the browser profile on disk; Firefox's session store captures form state, and whether it captures this editor is under test — treat it as an open edge. |
+| **The OS** | Your operating system | Copy hands text to the system clipboard — clipboard history managers (Win+V, Maccy) keep it, and Universal Clipboard / Cloud Clipboard may sync it across devices. Mobile keyboards and IMEs learn from what's typed. RAM, swap, hibernation files, and accessibility APIs are OS business. |
 
-An edge found inside what the page controls is a bug — please report it.
-One found outside is a contribution — it belongs on this list.
+An edge found in the page's row is a bug — please report it. One found in
+the other rows is a contribution — it belongs in this table.
 
 ---
 
