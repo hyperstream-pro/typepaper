@@ -232,10 +232,12 @@ index.html          shell + inline SVG icons (no icon dependency)
 src/main.ts         editor, theme, clipboard, ephemerality guards
 src/serialize.ts    ProseMirror doc → Markdown-ish plain text, hand-written
 src/styles.css      palette, type, layout, bundled ProseMirror base styles
-vite.config.ts      static build + build-time CSP meta injection
+vite.config.ts      static build + CSP meta injection + brand switch
 vercel.json         Vercel headers and cache policy
 public/_headers     the same, for Cloudflare Pages
-public/favicon.svg  a caret on a pane, adapts to light/dark
+public/brand/       two marks: lines/ (default) and t/ — favicon,
+                    social card, touch icon each. Build with VITE_BRAND=t
+                    to switch every reference; both ship either way.
 ```
 
 Four production dependencies (43 packages transitively), all from the Tiptap

@@ -1,4 +1,4 @@
-import { defineConfig, type Plugin } from 'vite'
+import { defineConfig, loadEnv, type Plugin } from 'vite'
 
 /**
  * The policy. `connect-src 'none'` is the important line: the page is
@@ -19,6 +19,21 @@ export const CSP = [
   "base-uri 'none'",
   "form-action 'none'",
 ].join('; ')
+
+/**
+ * Two brand marks ship in public/brand/ — "lines" (text fading out) and
+ * "t" (the serif letter). index.html references the default; set
+ * VITE_BRAND=t at build (or dev) time to switch every reference. Both
+ * asset sets are copied to dist either way; only the HTML pointers move.
+ */
+function brandSwitch(brand: string): Plugin {
+  return {
+    name: 'brand-switch',
+    transformIndexHtml(html) {
+      return html.replaceAll('/brand/lines/', `/brand/${brand}/`)
+    },
+  }
+}
 
 /**
  * Belt and braces: the headers are the real enforcement, but baking the
@@ -43,8 +58,13 @@ function cspMeta(): Plugin {
   }
 }
 
-export default defineConfig({
-  plugins: [cspMeta()],
+export default defineConfig(({ mode }) => ({
+  plugins: [
+    // loadEnv (rather than process.env) keeps this file typecheckable
+    // without node types; it reads VITE_* from the shell and .env files.
+    brandSwitch(loadEnv(mode, '.', 'VITE_').VITE_BRAND === 't' ? 't' : 'lines'),
+    cspMeta(),
+  ],
   build: {
     target: 'es2020',
     cssCodeSplit: false,
@@ -62,4 +82,4 @@ export default defineConfig({
   server: {
     port: 5173,
   },
-})
+}))

@@ -129,6 +129,12 @@ restraint is the whole visual idea, so don't distribute it around the UI. The
 palette is day/night on one pane of glass; controls stay quiet at rest. Type
 is Newsreader with a system-serif fallback.
 
+Two brand marks live in `public/brand/`: **"lines"** (three bars fading out —
+the default) and **"t"** (the serif letter). `VITE_BRAND=t` at build time
+switches every reference; the plugin in vite.config.ts rewrites the HTML.
+The original caret-on-a-pane mark was retired deliberately (2026-07-25) —
+too close to iA Writer's cursor logo. Don't bring it back.
+
 ## Deploy
 
 **Cloudflare Pages is the target.** Build `npm run build`, output `dist`,
