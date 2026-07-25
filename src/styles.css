@@ -298,20 +298,22 @@ img.ProseMirror-separator {
 }
 
 /* ------------------------------------------------------------------
-   The promise. Visible only on a blank sheet.
+   The ground line — what the page doesn't do, along the bottom. Blank
+   sheet only; also carries the paper-mode hint (see the easter egg).
    ------------------------------------------------------------------ */
-.promise {
+.ground {
   position: fixed;
-  top: calc(18vh + 2.75rem); /* clears the first line of the sheet */
   left: 50%;
+  bottom: max(1.5rem, env(safe-area-inset-bottom));
   transform: translateX(-50%);
   width: 100%;
   max-width: var(--measure);
   margin: 0;
-  padding: 0 1.5rem;
-  font-size: 0.8125rem;
-  line-height: 1.5;
-  letter-spacing: 0.005em;
+  padding: 0 4.75rem; /* clears the source (left) and controls (right) */
+  text-align: center;
+  font-size: 0.75rem;
+  line-height: 1.55;
+  letter-spacing: 0.01em;
   color: var(--mute-text);
   pointer-events: none;
   opacity: 1;
@@ -321,10 +323,18 @@ img.ProseMirror-separator {
 /* visibility flips after the fade completes (the delayed transition
    lives on THIS state, so fading back in is instant-visible). Removes
    the faded text from the accessibility tree, not just from view. */
-body:not(.is-blank) .promise {
+body:not(.is-blank) .ground {
   opacity: 0;
   visibility: hidden;
   transition: opacity 300ms var(--ease), visibility 0s 300ms;
+}
+
+/* Paper mode borrows this line for its "type paper again" hint, so keep it
+   lit even while writing. */
+body.paper .ground {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 300ms var(--ease);
 }
 
 /* ------------------------------------------------------------------
@@ -354,7 +364,7 @@ body:not(.is-blank) .promise {
   border-radius: 2px;
 }
 
-/* Same visibility trick as .promise — an invisible link must not stay
+/* Same visibility trick as .ground — an invisible link must not stay
    keyboard-focusable, and visibility (unlike opacity) drops it from the
    tab order and the accessibility tree. */
 body:not(.is-blank) .source {
@@ -502,6 +512,57 @@ body:not(.is-blank) .source {
 }
 
 /* ------------------------------------------------------------------
+   Paper mode — the easter egg. Type "paper" (see main.ts) and the sheet
+   folds into ruled typewriter paper; type it again to fold it back. All
+   CSS, all local — the one deliberate departure from the single-accent
+   restraint. The transition lives on .editor so both folds animate.
+   ------------------------------------------------------------------ */
+.editor {
+  transition: background-color 900ms var(--ease), color 900ms var(--ease),
+    box-shadow 900ms var(--ease);
+}
+
+body.paper {
+  background: #cfc9bd; /* the desk */
+}
+:root[data-theme='night'] body.paper {
+  background: #211f1b; /* dark desk, the sheet lit like lamplight */
+}
+
+body.paper .editor {
+  color: #33302a;
+  caret-color: #b6543f;
+  font-family: ui-monospace, 'Courier New', Courier, monospace;
+  font-size: 16px;
+  line-height: 34px;
+  padding: 34px 44px 44px 76px;
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgb(40 32 16 / 25%), 0 16px 48px rgb(40 32 16 / 22%);
+  background-color: #f9f4e7;
+  background-image:
+    linear-gradient(#d9a79d, #d9a79d),
+    repeating-linear-gradient(transparent, transparent 33px, #d8cfba 33px, #d8cfba 34px);
+  background-size: 1px 100%, 100% 34px;
+  background-position: 58px 0, 0 34px;
+  background-repeat: no-repeat, repeat;
+  background-attachment: local, local;
+}
+
+body.paper .editor .ProseMirror {
+  min-height: 60vh;
+}
+
+body.paper .editor p.is-editor-empty:first-child::before {
+  color: #a89f8d;
+}
+
+body.paper .editor code,
+body.paper .editor pre {
+  background: rgb(40 32 16 / 6%);
+  border-color: rgb(40 32 16 / 12%);
+}
+
+/* ------------------------------------------------------------------
    Smaller screens
    ------------------------------------------------------------------ */
 @media (max-width: 34rem) {
@@ -511,9 +572,11 @@ body:not(.is-blank) .source {
   .sheet {
     padding: 12vh 1.25rem 50vh;
   }
-  .promise {
+  /* Lift the ground line above the corner source/controls on small screens,
+     where the long line wraps. */
+  .ground {
     padding: 0 1.25rem;
-    top: calc(12vh + 2.6rem);
+    bottom: max(4.75rem, calc(env(safe-area-inset-bottom) + 3.5rem));
   }
 }
 

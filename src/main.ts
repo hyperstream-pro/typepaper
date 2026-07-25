@@ -26,7 +26,7 @@ const editor = new Editor({
       trailingNode: false,
       heading: { levels: [1, 2, 3] },
     }),
-    Placeholder.configure({ placeholder: 'Start anywhere.' }),
+    Placeholder.configure({ placeholder: "Write. Close the tab when you're done. Nothing is kept." }),
   ],
   editorProps: {
     attributes: {
@@ -81,6 +81,43 @@ const syncBlankState = (): void => {
 
 editor.on('update', syncBlankState)
 syncBlankState()
+
+/* ------------------------------------------------------------------
+   Easter egg — type "paper" and the page becomes one.
+
+   Typing the word "paper" folds the sheet into ruled typewriter paper (a
+   `paper` class on <body>; all CSS). Type it again to fold it back. It's the
+   one place the single-accent restraint is spent on purpose. Nothing is
+   stored — the detection only reads text you already typed, and every session
+   still starts blank.
+   ------------------------------------------------------------------ */
+const ground = document.querySelector<HTMLElement>('.ground')
+const groundText = ground?.textContent ?? ''
+let paperArmed = true
+let paperHintTimer: number | undefined
+
+const togglePaper = (): void => {
+  const on = document.body.classList.toggle('paper')
+  if (!ground) return
+  window.clearTimeout(paperHintTimer)
+  ground.textContent = on ? 'paper mode · type "paper" again to fold it away' : groundText
+  if (on) paperHintTimer = window.setTimeout(() => (ground.textContent = groundText), 5000)
+}
+
+editor.on('update', () => {
+  // The text just before the caret; "paper" on a word boundary flips the mode.
+  // `paperArmed` re-arms once the boundary passes, so holding the word or
+  // typing "paperpaper" doesn't thrash the toggle.
+  const before = editor.state.doc.textBetween(0, editor.state.selection.head, '\n', '')
+  if (/(?:^|[^a-z])paper$/i.test(before)) {
+    if (paperArmed) {
+      paperArmed = false
+      togglePaper()
+    }
+  } else {
+    paperArmed = true
+  }
+})
 
 /* ------------------------------------------------------------------
    Theme — session only
