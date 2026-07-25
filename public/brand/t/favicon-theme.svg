@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <style>
+    .pane { fill: #edefee }
+    .ink { fill: #181b1c }
+    @media (prefers-color-scheme: dark) {
+      .pane { fill: #111415 }
+      .ink { fill: #d9dedd }
+    }
+  </style>
+  <rect class="pane" width="32" height="32" rx="7"/>
+  <text class="ink" x="16" y="23.5" text-anchor="middle"
+        font-family="Iowan Old Style, Palatino Linotype, Palatino, Charter, Georgia, serif"
+        font-size="24" font-weight="500">t</text>
+</svg>

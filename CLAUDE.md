@@ -157,6 +157,13 @@ Two brand marks live in `public/brand/`: **"t"** (the serif letter — the
 default, chosen 2026-07-25 as the more distinctive icon) and **"lines"**
 (three bars fading out). `VITE_BRAND=lines` at build time switches every
 reference; the plugin in vite.config.ts rewrites the HTML.
+
+The `t` favicon ships in two styles: **`favicon.svg`** (black on white — the
+default; a fixed white tile stands out on any browser tab) and
+**`favicon-theme.svg`** (theme-matching paper/ink, which blends into the tab).
+Swap the `<link rel="icon">` in `index.html` to interchange them. The touch
+icon (`apple-touch-icon.png`) matches the black-on-white favicon, rendered from
+Iowan Old Style to match its letterform.
 The original caret-on-a-pane mark was retired deliberately (2026-07-25) —
 too close to iA Writer's cursor logo. Don't bring it back.
 
