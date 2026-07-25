@@ -27,10 +27,15 @@ you can't see an absence — so they need stating.
 `npm run verify` enforces 1–5 against the built bundle, and `npm run build`
 runs it as its final step — so a violation fails the build (and therefore
 the Cloudflare/Vercel deploy, whose build command is `npm run build`). It
-checks every CSP directive in all three places the policy lives, that no
-directive names an external host, and that `_headers` and `vercel.json` stay
-byte-identical. Don't weaken the check to make it pass — if it fires, it's
-usually right.
+parses the CSP in all three places the policy lives and rejects any source
+that isn't exactly `'self'` or `'none'` (a widened `connect-src 'none' https:`
+or a bare host fails — substring checks used to wave those through), pins the
+other security headers to their exact values symmetrically across `_headers`
+and `vercel.json`, and bans network/navigation/storage API identifiers in the
+bundle even when aliased. `scripts/verify.test.mjs` mutates the built site the
+way a regression would and asserts the checker catches each one; `npm test`
+(serializer + verify) runs after verify in the build. Don't weaken the check
+to make it pass — if it fires, it's usually right.
 
 ## Pitfalls already hit
 
@@ -56,10 +61,29 @@ Costly to rediscover, so:
 - **The code-block serializer bumps its fence** to one more backtick than the
   longest run inside the body (CommonMark), or a code block *about* Markdown
   closes its own fence early. Don't simplify it back to a fixed ```` ``` ````.
+  Inline code spans do the same widening, and pad with a space when the content
+  starts or ends with a backtick.
+- **The serializer threads an `indent` string, not a depth count.** Content
+  under a list marker is indented by the marker's own width (`1. ` → three,
+  `- ` → two); a fixed two-space indent silently de-nested ordered sublists and
+  let a code block break out of its list item and eat the rest of the document.
+  Every block body line (code, continuation paragraphs, hard-break lines) is
+  indented to its column for the same reason. There is deliberately no global
+  `\n{3,}` collapse — it reached into code-block bodies and deleted the user's
+  blank lines. `scripts/serialize.test.mjs` locks all of this in; run it before
+  touching `serialize.ts`.
+- **The code-block `language` attribute is sanitised before it hits the fence.**
+  It's invisible in the editor but StarterKit's VS Code paste handler fills it
+  from an attacker-controlled clipboard field, so an unfiltered value injects
+  lines the user never saw into the "copy everything" output. Only a short
+  language-name token (`/^[A-Za-z0-9+#._-]{1,32}$/`) survives. Don't drop the
+  filter back to a bare `typeof === 'string'` check.
 - **Copy failure shows monochrome words, success shows the accent glyph.**
   Sighted users get no glyph change on failure, so `.feedback` surfaces the
-  message in `--mute`; the lone accent colour stays reserved for the success
-  confirmation. The sr-only `#status` is the screen-reader channel. Keep both.
+  message in `--mute-text` (the AA-contrast text token — `--mute` itself stays
+  quiet for the icons, which as non-text UI only need 3:1); the lone accent
+  colour stays reserved for the success confirmation. The sr-only `#status` is
+  the screen-reader channel. Keep both.
 - **StarterKit v3 differs from v2.** `history` is now `undoRedo`; `Link` and
   `Underline` ship by default. `Placeholder` moved to `@tiptap/extensions`.
 - **`link: false` removes Link from the schema but not linkifyjs from the

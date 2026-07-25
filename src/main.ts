@@ -231,6 +231,14 @@ const handleCopy = async (): Promise<void> => {
 
 copyButton.addEventListener('click', () => void handleCopy())
 
+// A <button> takes DOM focus on mousedown in Chrome, Firefox and Edge, which
+// blurs the editor — and nothing hands focus back, so the next keystrokes
+// after a copy or theme click go nowhere (and Space/Enter re-fire the button).
+// Preventing the default mousedown keeps the caret and selection in the editor
+// while the click still fires on mouseup. (Safari doesn't focus buttons on
+// click, so this bug was invisible there.)
+controls.addEventListener('mousedown', (event) => event.preventDefault())
+
 /* ------------------------------------------------------------------
    Ephemerality guards
    ------------------------------------------------------------------ */
@@ -261,10 +269,18 @@ window.addEventListener('beforeunload', (event) => {
   event.returnValue = ''
 })
 
-// Click the margins, land in the text.
+// Click the margins, land in the text — but only a genuine left-click on the
+// empty sheet. A mousedown on the window scrollbar targets <html> (the page
+// scrolls the body here, so any document past one screen has one); left
+// unguarded, grabbing that scrollbar would yank the caret to the end of the
+// document. Skip non-primary buttons, the scrollbar gutter, the controls, the
+// editor, and any link or button so those keep their own behaviour.
 document.addEventListener('mousedown', (event) => {
+  if (event.button !== 0) return
+  const root = document.documentElement
+  if (event.clientX >= root.clientWidth || event.clientY >= root.clientHeight) return
   const target = event.target as HTMLElement | null
-  if (!target || target.closest('.controls') || target.closest('.editor')) return
+  if (!target || target.closest('.controls, .editor, a, button')) return
   event.preventDefault()
   editor.commands.focus('end')
 })

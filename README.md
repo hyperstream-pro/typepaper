@@ -177,7 +177,12 @@ shasum -a 256 dist/assets/*
 **The invariants are enforced, not remembered.** `npm run verify` checks the
 built output for every promise on this page — no storage APIs, no network
 APIs, no external origins, no unreviewed URLs in the bundle, strict CSP in
-all three places it lives — and fails the build if any of them slips.
+all three places it lives — and fails the build if any of them slips. The CSP
+check is structural, not a substring match: a directive widened with a scheme
+source or a bare host fails, as does a security header deleted from either
+host file. `npm test` backs that with mutation tests — it deliberately breaks
+the built site each way and asserts the checker catches it — plus a serializer
+suite that pins what "copy everything" produces. Both run in the build.
 
 ---
 
@@ -246,16 +251,19 @@ enforces rather than a promise we make.
 ## Structure
 
 ```
-index.html          shell + inline SVG icons (no icon dependency)
-src/main.ts         editor, theme, clipboard, ephemerality guards
-src/serialize.ts    ProseMirror doc → Markdown-ish plain text, hand-written
-src/styles.css      palette, type, layout, bundled ProseMirror base styles
-vite.config.ts      static build + CSP meta injection + brand switch
-vercel.json         Vercel headers and cache policy
-public/_headers     the same, for Cloudflare Pages
-public/brand/       two marks: lines/ (default) and t/ — favicon,
-                    social card, touch icon each. Build with VITE_BRAND=t
-                    to switch every reference; both ship either way.
+index.html               shell + inline SVG icons (no icon dependency)
+src/main.ts              editor, theme, clipboard, ephemerality guards
+src/serialize.ts         ProseMirror doc → Markdown-ish plain text, hand-written
+src/styles.css           palette, type, layout, bundled ProseMirror base styles
+scripts/verify.mjs       enforces the invariants against the built bundle
+scripts/serialize.test.mjs  serializer output tests (node --test)
+scripts/verify.test.mjs  mutation tests: proves verify catches each violation
+vite.config.ts           static build + CSP meta injection + brand switch
+vercel.json              Vercel headers and cache policy
+public/_headers          the same, for Cloudflare Pages
+public/brand/            two marks: lines/ (default) and t/ — favicon,
+                         social card, touch icon each. Build with VITE_BRAND=t
+                         to switch every reference; both ship either way.
 ```
 
 Four production dependencies (43 packages transitively), all from the Tiptap

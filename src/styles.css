@@ -33,6 +33,11 @@
   --bg: #edefee;
   --ink: #181b1c;
   --mute: #7e8583;
+  /* Text uses --mute-text, which clears WCAG AA (4.5:1) on --bg. --mute
+     itself stays quiet for the control icons, which as non-text UI only
+     need 3:1 — darkening them to the text value would disturb the resting
+     calm the design is after. */
+  --mute-text: #656b69;
   --hairline: #d3d8d6;
   --chip: rgb(237 239 238 / 72%);
   --signal: #2c7a67;
@@ -53,6 +58,7 @@
   --bg: #edefee;
   --ink: #181b1c;
   --mute: #7e8583;
+  --mute-text: #656b69;
   --hairline: #d3d8d6;
   --chip: rgb(237 239 238 / 72%);
   --signal: #2c7a67;
@@ -64,6 +70,7 @@
   --bg: #111415;
   --ink: #d9dedd;
   --mute: #6d7573;
+  --mute-text: #7c8582;
   --hairline: #262d2e;
   --chip: rgb(17 20 21 / 72%);
   --signal: #63c2a8;
@@ -284,7 +291,7 @@ img.ProseMirror-separator {
 /* Placeholder — first line only */
 .editor p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
-  color: var(--mute);
+  color: var(--mute-text);
   float: left;
   height: 0;
   pointer-events: none;
@@ -305,7 +312,7 @@ img.ProseMirror-separator {
   font-size: 0.8125rem;
   line-height: 1.5;
   letter-spacing: 0.005em;
-  color: var(--mute);
+  color: var(--mute-text);
   pointer-events: none;
   opacity: 1;
   transition: opacity 300ms var(--ease);
@@ -329,7 +336,7 @@ body:not(.is-blank) .promise {
   bottom: max(1.5rem, env(safe-area-inset-bottom));
   font-size: 0.8125rem;
   letter-spacing: 0.005em;
-  color: var(--mute);
+  color: var(--mute-text);
   text-decoration: none;
   transition: opacity 300ms var(--ease), color 180ms var(--ease);
 }
@@ -469,7 +476,7 @@ body:not(.is-blank) .source {
   text-align: right;
   font-size: 0.8125rem;
   line-height: 1.4;
-  color: var(--mute);
+  color: var(--mute-text);
   opacity: 0;
   transform: translateY(4px);
   pointer-events: none;
