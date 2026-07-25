@@ -62,6 +62,15 @@ const FORBIDDEN = [
   ['sendBeacon', 'network egress (invariant 2)'],
   ['EventSource', 'network egress (invariant 2)'],
   ['RTCPeerConnection', 'network egress (invariant 2)'],
+  // CSP cannot block top-level navigation (navigate-to never shipped),
+  // so navigation-based exfiltration is caught here instead. window.open
+  // is NOT on this list: StarterKit statically bundles the (disabled)
+  // Link extension whose dead click-handler contains one — importing
+  // extensions individually would allow banning it too (see CLAUDE.md).
+  ['location.href', 'navigation egress (invariant 2)'],
+  ['location.assign', 'navigation egress (invariant 2)'],
+  ['location.replace', 'navigation egress (invariant 2)'],
+  ['document.location', 'navigation egress (invariant 2)'],
 ]
 
 for (const file of textFiles) {
@@ -85,6 +94,11 @@ for (const file of files.filter((p) => extname(p) === '.js')) {
     if (!INERT_JS_URLS.has(m[0]) && !ALLOWED_URL.test(m[0]))
       fail(`${rel(file)}: unreviewed URL in bundle: ${m[0]} (invariant 3)`)
   }
+  // A scheme-only string literal ("https://") is the fingerprint of URL
+  // construction by concatenation — the one shape the full-URL scan above
+  // can't see. The bundle has no legitimate use for one.
+  if (/["'`]https?:\/\/["'`]/.test(src))
+    fail(`${rel(file)}: bare URL-scheme string literal — URL built by concatenation? (invariant 2/3)`)
 }
 const urlRefs = (file, src) => {
   const refs = []

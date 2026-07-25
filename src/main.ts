@@ -38,12 +38,6 @@ const editor = new Editor({
       spellcheck: 'false',
       autocapitalize: 'sentences',
       autocorrect: 'off',
-      // Browsers' session restore writes form state to the profile on
-      // disk; autocomplete=off opts form fields out in Firefox. Whether
-      // that extends to contenteditable is UNTESTED — costs nothing to
-      // declare, but the real answer is the manual crash-restore test
-      // in CLAUDE.md's open work. See README "Known limits".
-      autocomplete: 'off',
       'aria-label': 'Writing area',
       // Extensions run outside the CSP, so grammar checkers that upload
       // text (Grammarly, LanguageTool) can't be blocked — but they
@@ -163,6 +157,10 @@ const legacyCopy = (text: string): boolean => {
 const copyAll = async (text: string): Promise<boolean> => {
   // Both flavours: plain text lands cleanly in a terminal or textarea,
   // HTML keeps the formatting in Docs, Notion, mail clients.
+  //
+  // Everything before clipboard.write() must stay synchronous: Safari
+  // invalidates the user gesture across an await, and a write() without
+  // a live gesture fails silently. Don't insert awaits above it.
   const html = editor.getHTML()
 
   if (typeof ClipboardItem !== 'undefined' && navigator.clipboard?.write) {

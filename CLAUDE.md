@@ -153,10 +153,12 @@ Cloudflare.
   harness): in Firefox and Chrome, type text, force-kill the browser
   process, reopen, restore the session — does the text come back? Firefox's
   session store captures form state to disk; whether it captures this
-  contenteditable is unknown. `autocomplete="off"` is set on the editor as
-  a best-effort opt-out but is UNVERIFIED for contenteditable. Whatever the
-  result, document it in README's Known limits table (and if text survives,
-  that's a finding to frame ourselves, not to be found).
+  contenteditable is unknown. (`autocomplete="off"` is NOT a mitigation —
+  it's defined for form controls and inert on contenteditable; it was
+  briefly added and removed, don't re-add it.) State the result flatly in
+  README's Known limits table. If text survives, that is NOT a known limit
+  — "nothing survives the tab" breaks inside the browser — frame it as a
+  bug with a fix in flight.
 - Two font files into `public/fonts/` (see the README there). Fallback stack
   carries the design until then; nothing is broken.
 - Naming: **decided — "Typepaper" at typepaper.app** (July 2026; applied to

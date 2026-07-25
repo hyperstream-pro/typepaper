@@ -189,7 +189,8 @@ model, by who controls each layer:
 | Layer | Controlled by | The edges |
 |---|---|---|
 | **The page** | This code + the CSP | None, by design — every claim above is scoped to this layer and enforced by the build. A leak here is a bug: report it. |
-| **The browser** | Your browser vendor | Extensions with page access can read anything you can see (the editor ships the grammar-checker opt-outs — the strongest available fence). Crash/session restore may write page state to the browser profile on disk; Firefox's session store captures form state, and whether it captures this editor is under test — treat it as an open edge. |
+| **The browser** | Your browser vendor | Extensions with page access can read anything you can see (the editor ships the grammar-checker opt-outs — the strongest available fence). Crash/session restore is browser-owned; the per-browser result of the restore test is recorded here before launch. |
+| **The host** | The CDN serving the files | Sees each request like any website does — IP, user agent, timestamp — and never a keystroke, because nothing is ever sent. |
 | **The OS** | Your operating system | Copy hands text to the system clipboard — clipboard history managers (Win+V, Maccy) keep it, and Universal Clipboard / Cloud Clipboard may sync it across devices. Mobile keyboards and IMEs learn from what's typed. RAM, swap, hibernation files, and accessibility APIs are OS business. |
 
 An edge found in the page's row is a bug — please report it. One found in
