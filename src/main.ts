@@ -277,6 +277,25 @@ copyButton.addEventListener('click', () => void handleCopy())
 controls.addEventListener('mousedown', (event) => event.preventDefault())
 
 /* ------------------------------------------------------------------
+   Keep the controls in view when the mobile keyboard is up.
+
+   iOS pins position:fixed to the *layout* viewport, but opening the keyboard
+   scrolls the *visual* viewport to keep the caret visible — which leaves the
+   top-right controls off-screen while you type. Track the visual viewport's
+   vertical offset and hand it to CSS (--vv-offset), which .controls and
+   .feedback add to their `top`. UI-only reposition; no storage, no network.
+   ------------------------------------------------------------------ */
+const viewport = window.visualViewport
+if (viewport) {
+  const followViewport = (): void => {
+    document.documentElement.style.setProperty('--vv-offset', `${viewport.offsetTop}px`)
+  }
+  viewport.addEventListener('resize', followViewport)
+  viewport.addEventListener('scroll', followViewport)
+  followViewport()
+}
+
+/* ------------------------------------------------------------------
    Ephemerality guards
    ------------------------------------------------------------------ */
 
