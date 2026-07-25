@@ -380,7 +380,7 @@ body:not(.is-blank) .source {
 .controls {
   position: fixed;
   right: max(1.25rem, env(safe-area-inset-right));
-  bottom: max(1.25rem, env(safe-area-inset-bottom));
+  top: max(1.25rem, env(safe-area-inset-top));
   display: flex;
   align-items: center;
   gap: 0.125rem;
@@ -480,7 +480,7 @@ body:not(.is-blank) .source {
 .feedback {
   position: fixed;
   right: max(1.25rem, env(safe-area-inset-right));
-  bottom: calc(max(1.25rem, env(safe-area-inset-bottom)) + 3.25rem);
+  top: calc(max(1.25rem, env(safe-area-inset-top)) + 3.25rem);
   margin: 0;
   max-width: min(18rem, 68vw);
   text-align: right;
