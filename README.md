@@ -110,6 +110,14 @@ grep -c "fetch(\|XMLHttpRequest\|WebSocket\|sendBeacon" dist/assets/*.js
 # 0
 ```
 
+One `window.open` *does* survive in the bundle — so here it is before you grep
+for it. It's the click handler of StarterKit's `Link` extension, which this app
+disables; the handler is dead code the editor can never invoke, and it's the
+only navigation call in the build. `verify.mjs` allows exactly that one
+occurrence and fails the build if a second ever appears, and it bans bare
+`location` assignment outright. Navigation is the one channel a CSP can't close,
+so the check counts it rather than trusting it.
+
 **Paste is sanitised by the schema, not by a filter.** ProseMirror parses
 pasted HTML into a fixed set of node and mark types and discards everything
 else — this is structurally stronger than blocklisting. Tested with a payload
@@ -164,9 +172,11 @@ and every dependency's — not minified output. Maps are same-origin static
 files fetched only while DevTools is open; normal visits never load them.
 
 **The build is reproducible.** The lockfile is committed and the output is
-deterministic — two builds produce byte-identical files (verified on
-Node 20; the `engines` field pins the floor). Source maps let you *read*
-the code; this lets you *prove* the served bundle came from it:
+deterministic — two builds produce byte-identical files, because the lockfile
+pins the whole toolchain. Reproduce on the current Node LTS (Node 22; Node 20
+is end-of-life); a different Node major can shift the hash, so match versions
+before reporting a mismatch. Source maps let you *read* the code; this lets you
+*prove* the served bundle came from it:
 
 ```bash
 npm ci && npm run build
@@ -176,8 +186,10 @@ shasum -a 256 dist/assets/*
 
 **The invariants are enforced, not remembered.** `npm run verify` checks the
 built output for every promise on this page — no storage APIs, no network
-APIs, no external origins, no unreviewed URLs in the bundle, strict CSP in
-all three places it lives — and fails the build if any of them slips. The CSP
+APIs, no external origins, no unreviewed URLs in the bundle (its only URLs are
+inert W3C XML-namespace strings and one ProseMirror docs link, allowlisted by
+name in `verify.mjs`), strict CSP in all three places it lives — and fails the
+build if any of them slips. The CSP
 check is structural, not a substring match: a directive widened with a scheme
 source or a bare host fails, as does a security header deleted from either
 host file. `npm test` backs that with mutation tests — it deliberately breaks
@@ -280,6 +292,17 @@ it from the schema but not from the bundle, because StarterKit imports
 `linkifyjs` statically. Importing the ~14 extensions individually instead
 drops that weight, at the cost of a longer dependency list to maintain. I
 chose the maintainable side; the trade is yours to make.
+
+## Contributing
+
+Bug fixes are welcome — especially anything in the "page" layer, where a way to
+persist or leak text is a real bug. New features start as an issue, because the
+scope (type, copy) is deliberate. [`CONTRIBUTING.md`](CONTRIBUTING.md) lays out
+the invariants every change has to keep and the `npm run build` gate that
+enforces them; [`CLAUDE.md`](CLAUDE.md) is the long-form "why" behind each one.
+Security issues go to [`SECURITY.md`](SECURITY.md), privately — not a public
+issue. Participation is governed by the
+[Contributor Covenant](CODE_OF_CONDUCT.md).
 
 ## License
 
