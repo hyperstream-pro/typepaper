@@ -77,9 +77,10 @@ syncBlankState()
 /* ------------------------------------------------------------------
    Theme — session only
 
-   Deliberately not persisted. localStorage would survive the tab, and
-   the promise on the empty screen says nothing survives the tab. It
-   follows the OS until you override it, then holds until reload.
+   Opens light regardless of the OS preference; the toggle switches to
+   night for the session. Deliberately not persisted: localStorage
+   would survive the tab, and the promise on the empty screen says
+   nothing survives the tab.
    ------------------------------------------------------------------ */
 type Theme = 'day' | 'night'
 
@@ -88,13 +89,12 @@ const THEME_COLOUR: Record<Theme, string> = {
   night: '#111415',
 }
 
-const media = window.matchMedia('(prefers-color-scheme: dark)')
 const themeButton = document.querySelector<HTMLButtonElement>('[data-action="theme"]')!
 const themeMeta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')!
 
 let override: Theme | null = null
 
-const activeTheme = (): Theme => override ?? (media.matches ? 'night' : 'day')
+const activeTheme = (): Theme => override ?? 'day'
 
 const renderTheme = (): void => {
   const theme = activeTheme()
@@ -111,10 +111,6 @@ const renderTheme = (): void => {
 themeButton.addEventListener('click', () => {
   override = activeTheme() === 'night' ? 'day' : 'night'
   renderTheme()
-})
-
-media.addEventListener('change', () => {
-  if (override === null) renderTheme()
 })
 
 renderTheme()

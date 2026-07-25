@@ -185,10 +185,13 @@ all three places it lives — and fails the build if any of them slips.
 Each of these is deliberate and each is a small edit. I would rather flag
 them than have you find them.
 
-**Theme is not remembered.** It follows your OS, and a manual toggle lasts
-until reload. Persisting it would mean `localStorage`, and the empty screen
-promises nothing survives the tab — I would rather keep the promise literally
-true than save you one click. If you disagree, it's ~3 lines in `main.ts`.
+**The page opens in light mode, and the theme is not remembered.** The
+toggle switches to dark for the session; on reload it's light again.
+Persisting it would mean `localStorage`, and the empty screen promises
+nothing survives the tab — keeping the promise literally true beats saving
+you one click. Following the OS preference instead is a small change in
+`main.ts` (`activeTheme`) plus a `prefers-color-scheme` block in
+`styles.css`; persisting is ~3 more lines you shouldn't write.
 
 **Spellcheck is off.** `src/main.ts` → `editorProps.attributes.spellcheck`.
 Change `'false'` to `'true'` if you want squiggles more than you want the

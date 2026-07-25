@@ -44,21 +44,10 @@
   --ease: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-    --bg: #111415;
-    --ink: #d9dedd;
-    --mute: #6d7573;
-    --hairline: #262d2e;
-    --chip: rgb(17 20 21 / 72%);
-    --signal: #63c2a8;
-    --shadow: rgb(0 0 0 / 30%);
-  }
-}
-
-/* Explicit override wins over the OS preference. Session only —
-   nothing is written to disk, so this resets on reload. */
+/* The page opens light regardless of the OS preference (no
+   prefers-color-scheme block, so there's no dark flash before the
+   script runs). The toggle sets data-theme; session only — nothing is
+   written to disk, so this resets on reload. */
 :root[data-theme='day'] {
   color-scheme: light;
   --bg: #edefee;

@@ -92,9 +92,12 @@ Costly to rediscover, so:
 Don't "fix" these without asking. Each was a judgment call, and each is a
 small edit if the answer changes.
 
-- **Theme isn't remembered across reloads.** Persisting it needs
-  localStorage, and the empty screen promises nothing survives the tab.
-  Keeping the promise literally true beat saving one click.
+- **The page opens in light mode, ignoring the OS preference** (decided
+  2026-07-25), and the theme isn't remembered across reloads. Persisting it
+  needs localStorage, and the empty screen promises nothing survives the
+  tab. Keeping the promise literally true beat saving one click. There is
+  deliberately no `prefers-color-scheme` block in styles.css — it would
+  flash dark before the script sets day.
 - **`spellcheck="false"`.** Chrome's enhanced spell check and Edge's Microsoft
   Editor transmit what you type; the browser picks which engine runs, not us.
 - **There is a `beforeunload` prompt.** Native dialog, no storage involved. A
