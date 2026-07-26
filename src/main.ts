@@ -316,15 +316,6 @@ window.addEventListener(
   { capture: true },
 )
 
-// A stray Cmd+W shouldn't cost you an hour. This is a native browser
-// prompt — nothing is stored to make it work. Delete this block if you
-// want the page to close without argument.
-window.addEventListener('beforeunload', (event) => {
-  if (isBlank()) return
-  event.preventDefault()
-  event.returnValue = ''
-})
-
 // Click the margins, land in the text — but only a genuine left-click on the
 // empty sheet. A mousedown on the window scrollbar targets <html> (the page
 // scrolls the body here, so any document past one screen has one); left

@@ -56,8 +56,7 @@ Costly to rediscover, so:
   `content.size` heuristic looks tempting and is wrong in both directions:
   four empty paragraphs exceed a small size threshold yet are blank, and a
   lone `---` is under it yet is real content. The same definition backs the
-  copy button, the blank-sheet overlay, and the beforeunload guard, so they
-  never disagree. Don't reintroduce a size shortcut.
+  copy button and the blank-sheet overlay, so they never disagree. Don't reintroduce a size shortcut.
 - **The code-block serializer bumps its fence** to one more backtick than the
   longest run inside the body (CommonMark), or a code block *about* Markdown
   closes its own fence early. Don't simplify it back to a fixed ```` ``` ````.
@@ -124,8 +123,10 @@ small edit if the answer changes.
   flash dark before the script sets day.
 - **`spellcheck="false"`.** Chrome's enhanced spell check and Edge's Microsoft
   Editor transmit what you type; the browser picks which engine runs, not us.
-- **There is a `beforeunload` prompt.** Native dialog, no storage involved. A
-  stray ⌘W shouldn't cost an hour.
+- **There is deliberately no "leave site?" prompt.** The `beforeunload` guard
+  was removed 2026-07-26 — closing the tab is frictionless, which is exactly
+  what "gone when you close the tab" promises. Nothing is kept, so there is
+  nothing to warn about.
 - **The empty screen carries a line of copy** ("Nothing is saved…"), which
   vanishes on first keystroke. A first-time visitor has no other way to learn
   what the app is.
