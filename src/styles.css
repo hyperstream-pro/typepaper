@@ -43,7 +43,7 @@
   --signal: #2c7a67;
   --shadow: rgb(24 27 28 / 8%);
 
-  --measure: 36rem;
+  --measure: 48rem;
   --step: 1.1875rem; /* 19px */
   --leading: 1.65;
   --ease: cubic-bezier(0.32, 0.72, 0, 1);
