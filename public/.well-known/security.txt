@@ -1,4 +1,4 @@
-Contact: mailto:dev@hyperstream.pro
+Contact: https://github.com/hyperstream-pro/typepaper/security/advisories/new
 Expires: 2027-07-25T00:00:00.000Z
 Preferred-Languages: en
 Canonical: https://typepaper.app/.well-known/security.txt

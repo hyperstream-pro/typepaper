@@ -8,11 +8,11 @@ ones we get.
 
 **Please report privately. Do not open a public issue for a vulnerability.**
 
-Email **dev@hyperstream.pro** — the same contact, with our machine-readable
-policy, lives in
-[`/.well-known/security.txt`](public/.well-known/security.txt). If the
-repository has GitHub's private vulnerability reporting enabled, the
-"Report a vulnerability" button on the **Security** tab works too.
+Use GitHub's private reporting: the
+**["Report a vulnerability"](https://github.com/hyperstream-pro/typepaper/security/advisories/new)**
+button on the repository's **Security** tab opens a private advisory only the
+maintainers can see. The same pointer lives, machine-readable, in
+[`/.well-known/security.txt`](public/.well-known/security.txt).
 
 Please include:
 

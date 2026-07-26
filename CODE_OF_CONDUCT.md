@@ -59,8 +59,9 @@ representative at an online or offline event.
 ## Enforcement
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported to the community leaders responsible for enforcement at
-**dev@hyperstream.pro**.
+reported privately to the maintainers through the repository's private
+reporting channel (**Security → Report a vulnerability**), or by contacting
+the repository owner on GitHub.
 
 All complaints will be reviewed and investigated promptly and fairly.
 
