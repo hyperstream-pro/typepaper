@@ -196,11 +196,8 @@ lives under specific cache-key variants (encoding, PoP), so verify with a
 real browser. **After every production deploy: load the live site in a
 browser and check the console. If it comes up unstyled, purge the zone cache
 in the dashboard (typepaper.app → Caching → Configuration → Purge
-Everything).** The credentials on this machine can't purge — the MCP token
-is Pages-scoped and wrangler's OAuth lacks the Cache Purge permission — so
-the purge is a dashboard action. Docs-only deploys reuse every existing
-asset URL and can't re-open the poisoning window; only deploys that change
-the bundle can.
+Everything).** Docs-only deploys reuse every existing asset URL and can't
+re-open the poisoning window; only deploys that change the bundle can.
 
 Vercel works too (`vercel.json` is ready) and 1M visits/month fits inside
 Pro's included allowances. But Vercel bills all served bandwidth past the
