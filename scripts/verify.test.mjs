@@ -108,6 +108,10 @@ const mutations = [
     edit(HTML(dir), 'name="theme-color"', 'name="theme-colour"')],
   ['no-referrer meta removed', (dir) =>
     edit(HTML(dir), 'name="referrer"', 'name="referer"')],
+  ['404 page removed (Pages would revert to the poisonable SPA fallback)', (dir) =>
+    rmSync(join(dir, 'dist', '404.html'))],
+  ['404 page stylesheet link removed (CSP forbids inline styles)', (dir) =>
+    edit(join(dir, 'dist', '404.html'), '<link rel="stylesheet" href="/404.css" />', '')],
 ]
 
 for (const [name, mutate] of mutations) {

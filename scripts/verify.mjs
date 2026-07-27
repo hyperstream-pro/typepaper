@@ -363,6 +363,25 @@ for (const hook of [
   if (!html.includes(hook)) fail(`dist/index.html: structural hook ${hook} missing (main.ts asserts on it)`)
 }
 
+/* 8 — the 404 page. Its presence is what switches Cloudflare Pages out of
+   SPA-fallback mode: without it, a request for a missing asset returns
+   index.html with status 200 and the assets' year-long immutable header,
+   which the edge cache then pins under the asset URL — HTML served as
+   CSS/JS until someone purges (the 2026-07-27 launch-day outage). A file's
+   absence is invisible in review, so it is asserted here. The page must
+   also stay static (no script) and keep its external stylesheet link — the
+   CSP forbids inline styles, so without the link it ships unstyled. */
+const notFound = join(dist, '404.html')
+if (!existsSync(notFound)) {
+  fail('dist/404.html missing — Pages reverts to serving index.html for unknown paths, re-opening the asset cache-poisoning window')
+} else {
+  const nf = readFileSync(notFound, 'utf8')
+  if (!nf.includes('href="/404.css"'))
+    fail('dist/404.html: stylesheet link missing (CSP forbids inline styles; the page would ship unstyled)')
+  if (/<script\b/i.test(nf)) fail('dist/404.html: contains a script — the 404 page is deliberately static')
+  if (!existsSync(join(dist, '404.css'))) fail('dist/404.css missing — the 404 page ships unstyled')
+}
+
 if (failures.length) {
   console.error(`verify: ${failures.length} violation(s):\n`)
   for (const f of failures) console.error('  ✗ ' + f)

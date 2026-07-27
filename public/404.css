@@ -1,0 +1,63 @@
+/* The 404 page's own stylesheet — the strict CSP (style-src 'self') forbids
+   inline styles, so the page links this file instead. Values are copied from
+   the app's day palette rather than shared: this page must stay dependency-
+   free (no bundle, no fonts fetched — the serif stack is the same fallback
+   the app uses while the font files are pending). Light-only on purpose;
+   the theme toggle is session state the app holds, and every visit opens
+   light there too. */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  background: #edefee;
+  color: #181b1c;
+  font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, Charter,
+    Georgia, ui-serif, serif;
+  font-size: 1.1875rem;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+main {
+  text-align: center;
+  padding: 1.5rem;
+}
+
+.code {
+  margin: 0;
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  color: #656b69;
+}
+
+h1 {
+  margin: 0.25rem 0 0;
+  font-size: 1.4em;
+  font-weight: 600;
+  letter-spacing: -0.011em;
+}
+
+p {
+  margin: 0.9em 0 0;
+}
+
+a {
+  color: #656b69;
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  color: #181b1c;
+}
+
+a:focus-visible {
+  color: #181b1c;
+  outline: 2px solid #2c7a67;
+  outline-offset: 3px;
+  border-radius: 2px;
+}

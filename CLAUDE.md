@@ -199,6 +199,18 @@ in the dashboard (typepaper.app → Caching → Configuration → Purge
 Everything).** Docs-only deploys reuse every existing asset URL and can't
 re-open the poisoning window; only deploys that change the bundle can.
 
+Two hardenings against a repeat (2026-07-27): **`public/404.html` is
+load-bearing** — its presence switches Pages out of SPA-fallback mode, so a
+mid-propagation asset request returns a briefly-cached 404 that self-heals
+instead of a year-pinned 200; `npm run verify` asserts it ships, stays
+script-free, and keeps its `/404.css` link (CSP forbids inline styles).
+Don't remove it, and don't add a script or an inline style to it. Second, a
+zone Cache Rule capping Edge TTL for 4xx/5xx responses at no-cache covers
+the 503 flavour of the same poisoning — that lives in the Cloudflare
+dashboard, not this repo. Preview deploys also pre-replicate production's
+assets (deterministic build → identical hashes), which is most of why the
+preview-first rule closes the race.
+
 Vercel works too (`vercel.json` is ready) and 1M visits/month fits inside
 Pro's included allowances. But Vercel bills all served bandwidth past the
 tier including bot and attack traffic — documented $20 accounts hitting
