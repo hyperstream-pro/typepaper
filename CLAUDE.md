@@ -219,23 +219,24 @@ Cloudflare.
 
 ## Open work
 
-- **Manual crash-restore test before launch** (cannot be automated from this
-  harness): in Firefox and Chrome, type text, force-kill the browser
-  process, reopen, restore the session — does the text come back? Firefox's
-  session store captures form state to disk; whether it captures this
-  contenteditable is unknown. (`autocomplete="off"` is NOT a mitigation —
-  it's defined for form controls and inert on contenteditable; it was
-  briefly added and removed, don't re-add it.) State the result flatly in
-  README's Known limits table. If text survives, that is NOT a known limit
-  — "nothing survives the tab" breaks inside the browser — frame it as a
-  bug with a fix in flight.
-- Two font files into `public/fonts/` (see the README there). Fallback stack
-  carries the design until then; nothing is broken.
-- Naming: **decided — "Typepaper" at typepaper.app** (July 2026; applied to
-  title, package.json, README, canonical link). .app chosen deliberately:
-  the TLD is HSTS-preloaded, extending the platform-enforced-guarantee
-  pattern to the domain itself. Registration pending — register before
-  announcing anything. typepaper.com is a HugeDomains squat; ignore it.
+- **Crash-restore test: done, both browsers, text does NOT survive**
+  (2026-07-27 — automated after all, with real binaries: isolated throwaway
+  profiles, real SIGKILL, CDP for Chrome / Marionette for Firefox, then
+  byte-level inspection of the profiles). Chrome never writes the editor's
+  content to disk anywhere; Firefox's session store records the tab with
+  `hasUserInteraction: true` but NO `formdata` key (recovery.jsonlz4
+  decompressed and checked; store flush interval shrunk to 1s for the test
+  so timing wasn't the reason). Result stated in README's Known limits.
+  (`autocomplete="off"` remains a non-mitigation — inert on contenteditable;
+  don't re-add it.)
+- Fonts: **done 2026-07-27** — the two Newsreader variable woff2 files +
+  OFL.txt live in `public/fonts/`, verified loading in the built site and
+  in production.
+- Naming: **done — "Typepaper" at typepaper.app**, registered and live in
+  production (July 2026), Cloudflare Pages with auto-deploy from main.
+  .app chosen deliberately: the TLD is HSTS-preloaded, extending the
+  platform-enforced-guarantee pattern to the domain itself. typepaper.com
+  is a HugeDomains squat; ignore it.
 - Optional: importing Tiptap extensions individually instead of StarterKit
   drops linkifyjs, at the cost of a longer dependency list. Deliberately not
   done — maintainability won.
