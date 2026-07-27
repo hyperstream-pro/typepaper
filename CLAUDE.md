@@ -182,6 +182,26 @@ too close to iA Writer's cursor logo. Don't bring it back.
 `public/_headers` gets copied in automatically. Static asset requests are free
 and unlimited on every tier, which is what makes the cost promise real.
 
+**Preview before production** (rule added 2026-07-27): push to a non-main
+branch first — Pages builds every branch into a preview URL — open that in a
+real browser, check the render and the console, then merge to main. Adopted
+after the launch-day incident, and honest about what it covers: preview
+catches a broken build; the incident itself was the *other* failure mode.
+In the first minutes after a production deploy, a request for a newly-hashed
+asset can reach an edge node before the file does, and the fallback response
+(the SPA index.html, or a 503) gets cached under the asset's URL with the
+one-year `immutable` header meant for real assets — the site then serves
+HTML-as-CSS to some visitors indefinitely. curl can miss it: the poison
+lives under specific cache-key variants (encoding, PoP), so verify with a
+real browser. **After every production deploy: load the live site in a
+browser and check the console. If it comes up unstyled, purge the zone cache
+in the dashboard (typepaper.app → Caching → Configuration → Purge
+Everything).** The credentials on this machine can't purge — the MCP token
+is Pages-scoped and wrangler's OAuth lacks the Cache Purge permission — so
+the purge is a dashboard action. Docs-only deploys reuse every existing
+asset URL and can't re-open the poisoning window; only deploys that change
+the bundle can.
+
 Vercel works too (`vercel.json` is ready) and 1M visits/month fits inside
 Pro's included allowances. But Vercel bills all served bandwidth past the
 tier including bot and attack traffic — documented $20 accounts hitting
