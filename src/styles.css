@@ -375,6 +375,36 @@ body:not(.is-blank) .source {
 }
 
 /* ------------------------------------------------------------------
+   The count — words and characters, bottom-right. The ground line's
+   inverse: appears once there is something to count, gone on the
+   blank sheet. Tabular figures so the corner doesn't jiggle as the
+   digits roll over.
+   ------------------------------------------------------------------ */
+.count {
+  position: fixed;
+  right: max(1.25rem, env(safe-area-inset-right));
+  bottom: calc(max(1.5rem, env(safe-area-inset-bottom)) + var(--vv-bottom, 0px));
+  margin: 0;
+  font-size: 0.8125rem;
+  letter-spacing: 0.005em;
+  font-variant-numeric: tabular-nums;
+  color: var(--mute-text);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 300ms var(--ease), visibility 0s 300ms;
+}
+
+/* Same delayed-visibility trick as .ground, mirrored: the delay lives on
+   the hidden state, so appearing is instant-visible and fading out waits
+   for the opacity transition before leaving the accessibility tree. */
+.count.is-shown {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 300ms var(--ease);
+}
+
+/* ------------------------------------------------------------------
    Controls — fixed, always reachable, quiet at rest
    ------------------------------------------------------------------ */
 .controls {

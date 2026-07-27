@@ -12,7 +12,7 @@
     "build": "tsc --noEmit && vite build && node scripts/verify.mjs && npm test",
     "preview": "vite preview",
     "verify": "node scripts/verify.mjs",
-    "test": "node --test scripts/serialize.test.mjs scripts/verify.test.mjs"
+    "test": "node --test scripts/serialize.test.mjs scripts/count.test.mjs scripts/verify.test.mjs"
   },
   "dependencies": {
     "@tiptap/core": "^3.27.0",

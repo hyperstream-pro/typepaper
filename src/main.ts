@@ -2,6 +2,7 @@ import { Editor } from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
 import { Placeholder } from '@tiptap/extensions'
 import { toPlainText } from './serialize'
+import { countDoc, formatCount } from './count'
 import './styles.css'
 
 /* ------------------------------------------------------------------
@@ -81,6 +82,28 @@ const syncBlankState = (): void => {
 
 editor.on('update', syncBlankState)
 syncBlankState()
+
+/* ------------------------------------------------------------------
+   The corner count — words and characters, bottom-right.
+
+   Added 2026-07-27 on the first piece of user feedback: drafting to a
+   length means guessing without it. Derived state only — recomputed
+   from the document on every update, stored nowhere, sent nowhere.
+   ------------------------------------------------------------------ */
+const countLine = document.querySelector<HTMLElement>('.count')!
+
+const syncCount = (): void => {
+  const { words, characters } = countDoc(editor.state.doc)
+  countLine.textContent = formatCount(words, characters)
+  // Hidden while there is nothing to count: the blank sheet belongs to the
+  // promise line, and "0 words" over an empty page is chrome for its own
+  // sake. Characters gate the visibility — a run of spaces is countable
+  // (0 words, 3 characters), a lone horizontal rule is not.
+  countLine.classList.toggle('is-shown', characters > 0)
+}
+
+editor.on('update', syncCount)
+syncCount()
 
 /* ------------------------------------------------------------------
    Easter egg — type "paper" and the page becomes one.
@@ -283,12 +306,19 @@ controls.addEventListener('mousedown', (event) => event.preventDefault())
    scrolls the *visual* viewport to keep the caret visible — which leaves the
    top-right controls off-screen while you type. Track the visual viewport's
    vertical offset and hand it to CSS (--vv-offset), which .controls and
-   .feedback add to their `top`. UI-only reposition; no storage, no network.
+   .feedback add to their `top`. --vv-bottom is the same idea from the other
+   edge: how far the layout viewport's bottom sits below the visual one, so
+   the corner count rides above the keyboard instead of hiding behind it.
+   UI-only reposition; no storage, no network.
    ------------------------------------------------------------------ */
 const viewport = window.visualViewport
 if (viewport) {
   const followViewport = (): void => {
     document.documentElement.style.setProperty('--vv-offset', `${viewport.offsetTop}px`)
+    document.documentElement.style.setProperty(
+      '--vv-bottom',
+      `${Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop)}px`,
+    )
   }
   viewport.addEventListener('resize', followViewport)
   viewport.addEventListener('scroll', followViewport)

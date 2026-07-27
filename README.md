@@ -4,7 +4,9 @@ A blank page for getting a thought out of your head. It holds text while you
 write and forgets it when you leave. There is no account, no cookie, no
 database, no analytics, and no network call of any kind.
 
-Two controls: light/dark, and copy everything.
+Two controls: light/dark, and copy everything. While you write, a word and
+character count sits quietly in the corner; it fades with everything else on
+the blank sheet.
 
 ---
 
