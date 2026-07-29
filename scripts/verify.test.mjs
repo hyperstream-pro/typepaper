@@ -106,6 +106,8 @@ const mutations = [
     edit(jsPath(dir), 'spellcheck:"false"', 'spellcheck:"true"')],
   ['theme-color meta (a main.ts assertion hook) removed', (dir) =>
     edit(HTML(dir), 'name="theme-color"', 'name="theme-colour"')],
+  ['clear button (a main.ts assertion hook) removed', (dir) =>
+    edit(HTML(dir), 'data-action="clear"', 'data-action="reset"')],
   ['no-referrer meta removed', (dir) =>
     edit(HTML(dir), 'name="referrer"', 'name="referer"')],
   ['404 page removed (Pages would revert to the poisonable SPA fallback)', (dir) =>

@@ -1,8 +1,8 @@
 # CLAUDE.md
 
 A single-page writing surface. You type, you copy, you leave, it's gone.
-Two controls: light/dark and copy-everything, plus a quiet word · character
-count in the corner while you write. No account, no save.
+Three controls: light/dark, copy-everything and clear-the-page, plus a quiet
+word · character count in the corner while you write. No account, no save.
 
 Built and verified July 2026. Vite + vanilla TS + Tiptap v3. Static output only.
 
@@ -84,6 +84,22 @@ Costly to rediscover, so:
   quiet for the icons, which as non-text UI only need 3:1); the lone accent
   colour stays reserved for the success confirmation. The sr-only `#status` is
   the screen-reader channel. Keep both.
+- **Clearing the page has to empty the undo history too.** `clearContent()`
+  alone leaves every character one ⌘Z away, which makes the button a
+  half-truth — "clear" has to survive someone else sitting down at the
+  keyboard. prosemirror-history has no reset command, so `clearPaper()` builds
+  a fresh `EditorState` over the same doc and the same plugin list: every
+  plugin re-initialises, the history stack among them. Verified in a real
+  browser (2026-07-29): after a clear, ⌘Z restores nothing, and ordinary undo
+  and the Markdown input rules both still work on the new state. Don't
+  "simplify" it back to the single command, and don't reach for a reload —
+  see the next entry.
+- **The clear button is not a reload, and can't become one.** `location` is a
+  banned identifier in the bundle (invariant 2 — top-level navigation is the
+  one egress the CSP cannot block), so `location.reload()` fails `npm run
+  verify` and therefore the build. It would also throw away the theme the
+  visitor just chose, which is session state the promise never offered to
+  destroy. Clearing happens in place.
 - **StarterKit v3 differs from v2.** `history` is now `undoRedo`; `Link` and
   `Underline` ship by default. `Placeholder` moved to `@tiptap/extensions`.
 - **`link: false` removes Link from the schema but not linkifyjs from the
@@ -138,15 +154,29 @@ small edit if the answer changes.
   It fades with the promise line. Don't add further chrome alongside it.
 - **Underline survives the HTML clipboard flavour but not the plain-text
   one.** Markdown has no underline syntax. Everything else round-trips.
+- **The clear button takes two presses, and there is no undo after the
+  second** (added 2026-07-29). Both halves are deliberate. The wipe is
+  irreversible because a recoverable "clear" isn't one; the first press only
+  arms it because an irreversible action reachable by one stray click, in an
+  app with no autosave, is a trap — and on a phone there is no tooltip, so
+  the armed state ("Press again to clear") is also the only way to find out
+  what the third icon does without paying for the answer. It disarms after
+  four seconds, on Escape, or on the next keystroke. This is not in tension
+  with dropping the `beforeunload` guard: that guard second-guessed a gesture
+  the user unmistakably made (⌘W), where this one labels a gesture they may
+  not have meant yet. No dialog — a modal is chrome, and this app has none.
 - **No toolbar, no autosave, no export.** Markdown input rules only. Scope
-  is two actions: type, copy. New features need a real argument — the corner
-  word · character count (added 2026-07-27) is the one that cleared the bar:
+  is three actions: type, copy, clear. New features need a real argument —
+  the corner word · character count (added 2026-07-27) is the one that
+  cleared the bar:
   the first piece of user feedback named drafting-to-a-length as the concrete
   need. It's derived state only (nothing stored, nothing sent), hidden on the
   blank sheet so the promise line keeps that moment, and counted by
   `src/count.ts` (locked in by `scripts/count.test.mjs` — NUL-separator
   trick keeps block boundaries out of the character count while code-block
-  newlines stay in). Don't let it grow settings or siblings.
+  newlines stay in). Don't let it grow settings.
+  The clear button is the second, and the pill is now full: a fourth control
+  would be the point where the corner stops being quiet.
 - **Source maps are ON in production, deliberately.** They're transparency,
   not an oversight: DevTools shows the real annotated TypeScript, and the
   README points users at it. Maps only load while DevTools is open, so they

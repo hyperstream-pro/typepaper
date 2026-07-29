@@ -1,6 +1,10 @@
 import { Editor } from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
 import { Placeholder } from '@tiptap/extensions'
+// Re-export of the prosemirror-state already in the bundle (Tiptap's own
+// dependency), so this costs nothing and can't produce a second instance.
+// Used in exactly one place: emptying the undo history — see Clear.
+import { EditorState } from '@tiptap/pm/state'
 import { toPlainText } from './serialize'
 import { countDoc, formatCount } from './count'
 import './styles.css'
@@ -184,18 +188,46 @@ themeButton.addEventListener('click', () => {
 renderTheme()
 
 /* ------------------------------------------------------------------
-   Copy
+   The transient surface
+
+   Everything the controls say back — the copy confirmation, the words
+   under the pill, the clear button's armed state — is one surface with
+   one timer and one way back to rest. Two of them on screen at once
+   would be two claims about the same sheet, and whichever timer fired
+   first would half-clear the other. So: taking the surface resets it.
    ------------------------------------------------------------------ */
-const copyButton = document.querySelector<HTMLButtonElement>('[data-action="copy"]')!
 const controls = document.querySelector<HTMLElement>('.controls')!
+const copyButton = document.querySelector<HTMLButtonElement>('[data-action="copy"]')!
+const clearButton = document.querySelector<HTMLButtonElement>('[data-action="clear"]')!
 const status = document.querySelector<HTMLElement>('#status')!
-// Visible sibling of the sr-only #status. Success shows a coloured glyph,
-// which sighted users read at a glance; failure has no glyph, so the words
-// have to appear on screen or the button looks broken. SR users already
-// hear #status, hence aria-hidden here.
+// Visible sibling of the sr-only #status. Copy success shows a coloured glyph,
+// which sighted users read at a glance; the cases with no glyph to change need
+// the words on screen or the button looks broken. SR users already hear
+// #status, hence aria-hidden here.
 const feedback = document.querySelector<HTMLElement>('.feedback')!
 
+const CLEAR_LABEL = 'Clear the page'
+
 let resetTimer: number | undefined
+
+const resetSurface = (): void => {
+  copyButton.dataset.state = 'idle'
+  copyButton.classList.remove('is-done')
+  controls.classList.remove('is-done')
+  clearButton.dataset.state = 'idle'
+  clearButton.setAttribute('aria-label', CLEAR_LABEL)
+  feedback.classList.remove('is-shown')
+  status.textContent = ''
+}
+
+const hold = (ms: number): void => {
+  window.clearTimeout(resetTimer)
+  resetTimer = window.setTimeout(resetSurface, ms)
+}
+
+/* ------------------------------------------------------------------
+   Copy
+   ------------------------------------------------------------------ */
 
 const legacyCopy = (text: string): boolean => {
   const scratch = document.createElement('textarea')
@@ -246,7 +278,7 @@ const copyAll = async (text: string): Promise<boolean> => {
 }
 
 const flash = (message: string, ok: boolean): void => {
-  window.clearTimeout(resetTimer)
+  resetSurface() // an armed clear button included: one claim at a time
   status.textContent = message // announced to screen readers either way
 
   if (ok) {
@@ -260,16 +292,15 @@ const flash = (message: string, ok: boolean): void => {
     feedback.classList.add('is-shown')
   }
 
-  resetTimer = window.setTimeout(() => {
-    copyButton.dataset.state = 'idle'
-    copyButton.classList.remove('is-done')
-    controls.classList.remove('is-done')
-    feedback.classList.remove('is-shown')
-    status.textContent = ''
-  }, 1600)
+  hold(1600)
 }
 
 const handleCopy = async (): Promise<void> => {
+  // Take the surface here rather than in flash(), which only runs once the
+  // clipboard promise settles: for that window an armed clear button would
+  // still be armed, and the next press would wipe the page instead of
+  // arming it. This is the synchronous funnel for the button and ⌘↵ both.
+  resetSurface()
   try {
     // Serialize once, here: it's both the empty-check and the payload, so
     // "nothing to copy" and a real clipboard failure never get the same
@@ -290,6 +321,87 @@ const handleCopy = async (): Promise<void> => {
 }
 
 copyButton.addEventListener('click', () => void handleCopy())
+
+/* ------------------------------------------------------------------
+   Clear — a fresh sheet without closing the tab
+
+   The undo history goes with the text, deliberately. Clearing the doc on
+   its own leaves every character one ⌘Z away, which would make this
+   button a half-truth in the one app that can't afford them: "clear the
+   page" has to survive someone else sitting down at the keyboard.
+   prosemirror-history has no reset command, so the flush is a fresh
+   EditorState over the same plugin list — every plugin re-initialises,
+   the history stack among them.
+
+   That makes it irreversible, so the first press only arms it. There is
+   no dialog (a modal is chrome, and this app has none) and on a phone
+   there is no tooltip either, so the armed state is where the button
+   says what it is about to do — which also makes it the answer to "what
+   does this third icon do?" without costing anyone their draft. It
+   disarms after four seconds, on Escape, or the moment you go back to
+   writing.
+
+   Note what this deliberately is NOT: a reload. `location` is banned
+   from the bundle outright (invariant 2 — it is the one egress CSP can't
+   block), and a reload would also throw away the theme you just chose.
+   ------------------------------------------------------------------ */
+const arm = (): void => {
+  resetSurface()
+  clearButton.dataset.state = 'armed'
+  clearButton.setAttribute('aria-label', 'Press again to clear the page')
+  feedback.textContent = 'Press again to clear'
+  feedback.classList.add('is-shown')
+  status.textContent = 'Press again to clear the page. This cannot be undone.'
+  hold(4000)
+}
+
+const disarm = (): void => {
+  if (clearButton.dataset.state !== 'armed') return
+  window.clearTimeout(resetTimer)
+  resetSurface()
+}
+
+const clearPaper = (): void => {
+  // Two steps on purpose. The first is a real transaction, so Tiptap's own
+  // 'update' event fires and the blank-sheet class, the count and the paper
+  // easter egg re-sync through the paths they always use. The second replaces
+  // the state underneath an unchanged doc — no event, nothing to re-sync,
+  // just an empty history.
+  editor.commands.clearContent()
+  editor.view.updateState(
+    EditorState.create({ doc: editor.state.doc, plugins: editor.state.plugins }),
+  )
+  // Whoever pressed the button asked for a blank page to write on, so put the
+  // caret on it — including the keyboard user who would otherwise be left
+  // focused on a control with nothing left to do.
+  editor.commands.focus()
+}
+
+clearButton.addEventListener('click', () => {
+  // Same definition of "empty" the copy button uses, so the two never
+  // disagree about whether there is anything on the sheet.
+  if (isBlank()) {
+    flash('Nothing to clear', false)
+    return
+  }
+  if (clearButton.dataset.state !== 'armed') {
+    arm()
+    return
+  }
+  clearPaper()
+  // No words for this one: the page going blank under the promise line is
+  // the loudest confirmation available. #status is the channel for everyone
+  // who can't see that happen.
+  resetSurface()
+  status.textContent = 'Cleared'
+  hold(1600)
+})
+
+// Going back to writing is an answer to "press again?" — and so is Escape.
+editor.on('update', disarm)
+window.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') disarm()
+})
 
 // A <button> takes DOM focus on mousedown in Chrome, Firefox and Edge, which
 // blurs the editor — and nothing hands focus back, so the next keystrokes

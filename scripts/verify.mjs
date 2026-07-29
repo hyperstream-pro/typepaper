@@ -349,11 +349,12 @@ if (!html.includes('href="https://github.com/hyperstream-pro/typepaper"'))
 
 /* 7 — structural hooks main.ts asserts on with `!`. If markup drops one, the
    module throws at load and everything after it silently never wires up
-   (order-dependent partial init). All seven non-null querySelectors are
+   (order-dependent partial init). All eight non-null querySelectors are
    listed; theme-color and controls were the two that used to be missing. */
 for (const hook of [
   'data-action="theme"',
   'data-action="copy"',
+  'data-action="clear"',
   'class="editor"',
   'id="status"',
   'class="feedback"',

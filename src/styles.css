@@ -497,6 +497,15 @@ body:not(.is-blank) .source {
   transform: scale(0.7);
 }
 
+/* Clear, armed — held one press short of the end. Deliberately monochrome:
+   it reads as "lit", not as "confirmed", and the lone accent colour stays
+   the copy confirmation's alone. The words under the pill carry the rest,
+   so the state never rests on a tone alone. */
+.control[data-state='armed'] {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--ink) 12%, transparent);
+}
+
 /* Copy confirmation — the one moment of colour in the whole app */
 .control.is-done {
   color: var(--signal);

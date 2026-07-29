@@ -4,9 +4,14 @@ A blank page for getting a thought out of your head. It holds text while you
 write and forgets it when you leave. There is no account, no cookie, no
 database, no analytics, and no network call of any kind.
 
-Two controls: light/dark, and copy everything. While you write, a word and
-character count sits quietly in the corner; it fades with everything else on
-the blank sheet.
+Three controls: light/dark, copy everything, and clear the page. While you
+write, a word and character count sits quietly in the corner; it fades with
+everything else on the blank sheet.
+
+Clearing takes two presses — the first arms the button and says so — because
+the second one is final: the text and its undo history go together, so a
+cleared page cannot be brought back by whoever sits down at the keyboard
+next. It is not a reload; the theme you chose stays.
 
 ---
 
@@ -244,6 +249,11 @@ it's gone." It disappears on your first keystroke. A first-time visitor has
 no other way to know what the app is, but if you want the sheet truly bare,
 delete `<p class="promise">` from `index.html`.
 
+**Clearing the page needs two presses.** One press arms the button, the next
+one wipes. If you would rather it went in a single click, delete the `arm()`
+branch from the clear handler in `main.ts` — but keep the history flush
+underneath it, or ⌘Z turns "cleared" back into "still there".
+
 **Underline survives in the HTML flavour of a copy, not the plain-text one.**
 Markdown has no underline syntax. Everything else round-trips.
 
@@ -266,7 +276,7 @@ enforces rather than a promise we make.
 
 ```
 index.html               shell + inline SVG icons (no icon dependency)
-src/main.ts              editor, theme, clipboard, ephemerality guards
+src/main.ts              editor, theme, clipboard, clear, ephemerality guards
 src/serialize.ts         ProseMirror doc → Markdown-ish plain text, hand-written
 src/styles.css           palette, type, layout, bundled ProseMirror base styles
 scripts/verify.mjs       enforces the invariants against the built bundle

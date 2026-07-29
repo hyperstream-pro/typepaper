@@ -52,6 +52,26 @@
     <p class="count"></p>
 
     <div class="controls">
+      <!-- Clear sits first so the pill grows away from the corner: the copy
+           button keeps the exact position it has always had. A blank sheet
+           with a turned corner, drawn empty on purpose — the action hands you
+           a new one. Two presses, and the second is final (see main.ts). -->
+      <button
+        type="button"
+        class="control"
+        data-action="clear"
+        data-state="idle"
+        aria-label="Clear the page"
+        title="Clear the page"
+      >
+        <svg class="glyph" data-glyph="sheet" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+             stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <path d="M13.5 2.5H7.5A2.5 2.5 0 0 0 5 5v14a2.5 2.5 0 0 0 2.5 2.5h9a2.5 2.5 0 0 0 2.5-2.5V8z" />
+          <path d="M13.5 2.5V8h5.5" />
+        </svg>
+      </button>
+
       <button
         type="button"
         class="control"
