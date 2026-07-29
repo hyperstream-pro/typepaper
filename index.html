@@ -53,9 +53,17 @@
 
     <div class="controls">
       <!-- Clear sits first so the pill grows away from the corner: the copy
-           button keeps the exact position it has always had. A blank sheet
-           with a turned corner, drawn empty on purpose — the action hands you
-           a new one. Two presses, and the second is final (see main.ts). -->
+           button keeps the exact position it has always had. Two presses, and
+           the second is final (see main.ts).
+
+           A bin, not a fresh sheet and not a circular arrow. The sheet was
+           tried first (2026-07-29) and read as "file", which is the one thing
+           this button doesn't do. A circular arrow is just as legible but
+           means revert or reload — a promise of recoverability this action
+           cannot keep, since it takes the undo history with it. The bin is
+           the glyph that says "your text stops existing", which is exactly
+           what happens. Lid, tab, tapered body; no inner ticks, they turn to
+           noise at 17px. -->
       <button
         type="button"
         class="control"
@@ -64,11 +72,12 @@
         aria-label="Clear the page"
         title="Clear the page"
       >
-        <svg class="glyph" data-glyph="sheet" viewBox="0 0 24 24" fill="none"
+        <svg class="glyph" data-glyph="bin" viewBox="0 0 24 24" fill="none"
              stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
              stroke-linejoin="round" aria-hidden="true" focusable="false">
-          <path d="M13.5 2.5H7.5A2.5 2.5 0 0 0 5 5v14a2.5 2.5 0 0 0 2.5 2.5h9a2.5 2.5 0 0 0 2.5-2.5V8z" />
-          <path d="M13.5 2.5V8h5.5" />
+          <path d="M3.5 6.2h17" />
+          <path d="M9.2 6.2V4.6a2 2 0 0 1 2-2h1.6a2 2 0 0 1 2 2v1.6" />
+          <path d="M6.3 6.2v13a2.5 2.5 0 0 0 2.5 2.3h6.4a2.5 2.5 0 0 0 2.5-2.3V6.2" />
         </svg>
       </button>
 

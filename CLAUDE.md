@@ -206,6 +206,16 @@ Iowan Old Style to match its letterform.
 The original caret-on-a-pane mark was retired deliberately (2026-07-25) —
 too close to iA Writer's cursor logo. Don't bring it back.
 
+The clear button is **a bin** (settled 2026-07-29 after the first attempt
+shipped and was rejected on sight). A blank dog-eared sheet was tried first
+and reads as "file" — the one thing that button doesn't do; an eraser is an
+abstract diamond at 17px; a backspace glyph reads as a keyboard key. A
+circular arrow is equally legible and was the closest runner-up, but it
+means revert or reload, promising a recoverability this action can't give
+since it flushes the undo history. All four were rendered in the real pill
+at real size before choosing. Don't swap the bin for a document icon
+because it seems more on-brand — legibility already lost that argument once.
+
 ## Deploy
 
 **Cloudflare Pages is the target.** Build `npm run build`, output `dist`,
